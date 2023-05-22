@@ -8,9 +8,9 @@ export class Period {
     @Column()
     semester: number
 
-    @Column()
-    start: Date
+    @Column({type: 'datetime'})
+    started_at
 
-    @Column()
-    end: Date
+    @Column({type: 'datetime'})
+    ended_at: Date
 }
