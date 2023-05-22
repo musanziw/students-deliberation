@@ -3,7 +3,7 @@ import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
 @Entity()
 export class Grade {
     @PrimaryGeneratedColumn()
-    id: number;
+    id: number
 
     @Column({type: 'double'})
     average
