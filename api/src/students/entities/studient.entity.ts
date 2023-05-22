@@ -21,5 +21,5 @@ export class Student {
     personal_number: string
 
     @Column()
-    as_course: boolean
+    as_complementary_course: boolean
 }
