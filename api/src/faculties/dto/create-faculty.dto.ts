@@ -1,3 +1,6 @@
-export class CreateFacultyDto {
+import {IsString} from "class-validator";
 
+export class CreateFacultyDto {
+    @IsString()
+    name: string
 }
