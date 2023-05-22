@@ -1,4 +1,6 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Field} from "../../fields/entities/field.entity";
+import {Course} from "../../courses/entities/course.entity";
 
 @Entity()
 export class Promotion {
@@ -10,4 +12,10 @@ export class Promotion {
 
     @Column()
     name: string
+
+    @ManyToOne(() => Field, (field) => field.promotions)
+    field: Field
+
+    @OneToMany(() => Course, (course) => course.promotion, {onDelete: "CASCADE", cascade: true})
+    courses: Course[]
 }
