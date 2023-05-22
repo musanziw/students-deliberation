@@ -1,4 +1,5 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Course} from "../../courses/entities/course.entity";
 
 @Entity()
 export class Period {
@@ -13,4 +14,7 @@ export class Period {
 
     @Column({type: 'datetime'})
     ended_at: Date
+
+    @OneToMany(() => Course, (course) => course.period, {cascade: true, onDelete: 'CASCADE'})
+    courses: Course[]
 }

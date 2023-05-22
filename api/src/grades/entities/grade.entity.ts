@@ -1,4 +1,5 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Course} from "../../courses/entities/course.entity";
 
 @Entity()
 export class Grade {
@@ -7,4 +8,7 @@ export class Grade {
 
     @Column({type: 'double'})
     average
+
+    @ManyToOne(() => Course, (course) => course.grades)
+    course: Course
 }

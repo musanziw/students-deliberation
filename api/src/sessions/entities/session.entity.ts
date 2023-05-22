@@ -1,4 +1,5 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Report} from "../../reports/entities/report.entity";
 
 @Entity()
 export class Session {
@@ -7,4 +8,7 @@ export class Session {
 
     @Column()
     level: number
+
+    @OneToMany(() => Report, (report) => report.session, {cascade: true, onDelete: 'CASCADE'})
+    reports: Report[]
 }
