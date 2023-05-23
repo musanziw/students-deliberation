@@ -1,26 +1,93 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { Repository } from 'typeorm';
+import { Role } from './entities/role.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class RolesService {
-  create(createRoleDto: CreateRoleDto) {
-    return 'This action adds a new role';
+  constructor(
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
+  ) {}
+
+  async create(createRoleDto: CreateRoleDto) {
+    try {
+      await this.roleRepository.save(createRoleDto);
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Le rôle a bien été créé',
+      };
+    } catch {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'Impossible de créer le rôle',
+      };
+    }
   }
 
-  findAll() {
-    return `This action returns all roles`;
+  async findAll() {
+    const roles = await this.roleRepository.find({
+      order: { id: 'ASC' },
+    });
+    try {
+      return {
+        status: HttpStatus.OK,
+        roles,
+      };
+    } catch {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'Impossible de récupérer les rôles',
+      };
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} role`;
+  async findOne(id: number) {
+    try {
+      const role = await this.roleRepository.findOneOrFail({
+        where: { id },
+      });
+      return {
+        status: HttpStatus.OK,
+        role,
+      };
+    } catch {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        message: 'Impossible de récupérer le rôle',
+      };
+    }
   }
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
+  async update(id: number, updateRoleDto: UpdateRoleDto) {
+    try {
+      await this.roleRepository.update({ id }, updateRoleDto);
+      return {
+        status: HttpStatus.OK,
+        message: 'Le rôle a bien été mis à jour',
+      };
+    } catch {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'Impossible de mettre à jour le rôle',
+      };
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} role`;
+  async remove(id: number) {
+    try {
+      await this.roleRepository.delete({ id });
+      return {
+        status: HttpStatus.OK,
+        message: 'Le rôle a bien été supprimé',
+      };
+    } catch {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'Impossible de supprimer le rôle',
+      };
+    }
   }
 }
