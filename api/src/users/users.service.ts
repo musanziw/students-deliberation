@@ -71,21 +71,13 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const { password } = updateUserDto;
-    const salt: string = await bcrypt.genSalt(10);
-    const hashedPassword: string = await bcrypt.hash(password, salt);
     try {
       const user: User = await this.userRepository.findOneOrFail({
         where: { id },
       });
-      const data = {
-        ...updateUserDto,
-        password: hashedPassword,
-      };
-      console.log(data, user);
       await this.userRepository.save({
         ...user,
-        ...data,
+        ...updateUserDto,
       });
       return {
         status: HttpStatus.OK,
