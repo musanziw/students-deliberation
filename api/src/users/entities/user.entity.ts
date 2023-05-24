@@ -1,31 +1,38 @@
-import {Column, Entity, JoinTable, OneToMany, ManyToMany, PrimaryGeneratedColumn} from "typeorm";
-import {Course} from "../../courses/entities/course.entity";
-import {Role} from "../../roles/entities/role.entity";
+import {
+  Column,
+  Entity,
+  JoinTable,
+  OneToMany,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Course } from '../../courses/entities/course.entity';
+import { Role } from '../../roles/entities/role.entity';
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn()
-    id: number
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    firstname: string
+  @Column()
+  firstname: string;
 
-    @Column()
-    lastname: string
+  @Column()
+  lastname: string;
 
-    @Column()
-    name: string
+  @Column()
+  name: string;
 
-    @Column()
-    email: string
+  @Column()
+  email: string;
 
-    @Column()
-    password: string
+  @Column()
+  password: string;
 
-    @OneToMany(() => Course, (course) => course.user)
-    courses: Course[]
+  @OneToMany(() => Course, (course) => course.user)
+  courses: Course[];
 
-    @ManyToMany(() => Role)
-    @JoinTable()
-    roles: Role[]
+  @ManyToMany(() => Role)
+  @JoinTable()
+  roles: Role[];
 }
