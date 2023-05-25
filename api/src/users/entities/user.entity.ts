@@ -32,10 +32,10 @@ export class User {
   @Column({ default: true })
   is_active: boolean;
 
-  @OneToMany(() => Course, (course) => course.user)
+  @OneToMany(() => Course, (course) => course.teacher)
   courses: Course[];
 
-  @ManyToMany(() => Role)
+  @ManyToMany(() => Role, (role) => role.users)
   @JoinTable({ name: 'user_roles' })
   roles: Role[];
 }
