@@ -5,16 +5,18 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private config: ConfigService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { password } = createUserDto;
+    const password = this.config.get('DEFAULT_PASSWORD');
     const salt: string = await bcrypt.genSalt(10);
     const hashedPassword: string = await bcrypt.hash(password, salt);
     try {
@@ -93,10 +95,9 @@ export class UsersService {
 
   async remove(id: number) {
     try {
-      const user: User = await this.userRepository.findOneOrFail({
-        where: { id },
+      await this.userRepository.delete({
+        id,
       });
-      await this.userRepository.remove(user);
       return {
         status: HttpStatus.OK,
         message: "L'utilisateur a bien été supprimé.",
