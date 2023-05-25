@@ -1,6 +1,6 @@
-import {IsNumber} from "class-validator";
+import { IsNumber } from 'class-validator';
 
 export class CreateSessionDto {
-    @IsNumber()
-    level
+  @IsNumber({}, { message: 'Le niveau est requis.' })
+  level;
 }

@@ -1,6 +1,6 @@
-import {IsString} from "class-validator";
+import { IsString } from 'class-validator';
 
 export class CreateReportDto {
-    @IsString()
-    mention
+  @IsString({ message: 'La mention est requise.' })
+  mention;
 }

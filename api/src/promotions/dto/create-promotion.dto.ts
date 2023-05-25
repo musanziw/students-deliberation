@@ -1,9 +1,9 @@
-import {IsInt, IsString} from "class-validator";
+import { IsInt, IsString } from 'class-validator';
 
 export class CreatePromotionDto {
-    @IsInt()
-    level: number
+  @IsInt({ message: 'Le niveau est requis.' })
+  level: number;
 
-    @IsString()
-    name: string
+  @IsString({ message: 'Le nom est requis.' })
+  name: string;
 }

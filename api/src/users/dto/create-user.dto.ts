@@ -2,14 +2,14 @@ import { IsArray, IsEmail, IsString } from 'class-validator';
 import { Role } from '../../roles/entities/role.entity';
 
 export class CreateUserDto {
-  @IsString({ message: 'Le prénom doit être une chaîne de caractères.' })
+  @IsString({ message: 'Le prénom est requis.' })
   firstname: string;
 
-  @IsString({ message: 'Le nom doit être une chaîne de caractères.' })
+  @IsString({ message: 'Le nom doit est requis.' })
   lastname: string;
 
   @IsString({
-    message: "Le nom d'utilisateur doit être une chaîne de caractères.",
+    message: 'Le nom est requis.',
   })
   name: string;
 
@@ -19,6 +19,6 @@ export class CreateUserDto {
   )
   email: string;
 
-  @IsArray({ message: 'Les rôles doivent être un tableau de rôles.' })
+  @IsArray({ message: 'Les rôles doivent être rôles valides.' })
   roles: Role[];
 }

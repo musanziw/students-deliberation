@@ -1,12 +1,18 @@
-import {IsDate, IsNumber} from "class-validator";
+import { IsDate, IsInt, MinDate } from 'class-validator';
 
 export class CreatePeriodDto {
-    @IsNumber()
-    semester: number
+  @IsInt({ message: 'Le semestre est requis.' })
+  semester: number;
 
-    @IsDate()
-    started_at
+  @IsDate({ message: 'La date de début est requise.' })
+  @MinDate(new Date(), {
+    message: 'La date de début doit être supérieure à la date actuelle.',
+  })
+  started_at;
 
-    @IsDate()
-    ended_at
+  @IsDate({ message: 'La date de fin est requise.' })
+  @MinDate(() => new Date(), {
+    message: 'La date de fin doit être supérieure à la date actuelle.',
+  })
+  ended_at;
 }

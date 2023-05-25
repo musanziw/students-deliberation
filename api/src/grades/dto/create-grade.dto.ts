@@ -1,6 +1,6 @@
-import {IsNumber} from "class-validator";
+import { IsNumber } from 'class-validator';
 
 export class CreateGradeDto {
-    @IsNumber()
-    average;
+  @IsNumber({}, { message: 'La note annuelle est requise.' })
+  average;
 }
