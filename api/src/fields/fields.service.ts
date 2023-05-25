@@ -83,7 +83,18 @@ export class FieldsService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} field`;
+  async remove(id: number) {
+    try {
+      await this.fieldRepository.delete({ id });
+      return {
+        status: HttpStatus.OK,
+        message: 'La filière a bien été supprimée.',
+      };
+    } catch {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: "La filière n'a pas pu être supprimée.",
+      };
+    }
   }
 }
