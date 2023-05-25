@@ -1,6 +1,6 @@
-import {IsString} from "class-validator";
+import { IsString } from 'class-validator';
 
 export class CreateFacultyDto {
-    @IsString()
-    name: string
+  @IsString({ message: 'Le nom est requis.' })
+  name: string;
 }
