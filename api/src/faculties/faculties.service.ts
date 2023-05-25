@@ -31,6 +31,7 @@ export class FacultiesService {
     try {
       const faculties = await this.facultyRepository.find({
         order: { id: 'ASC' },
+        relations: ['fields'],
       });
       return {
         status: HttpStatus.OK,
@@ -78,16 +79,12 @@ export class FacultiesService {
 
   async remove(id: number) {
     try {
-      const faculty: Faculty = await this.facultyRepository.findOneOrFail({
-        where: { id },
-      });
-      await this.facultyRepository.delete(faculty);
+      await this.facultyRepository.delete({ id });
       return {
         status: HttpStatus.OK,
         message: 'La faculté a bien été supprimée.',
       };
-    } catch (error) {
-      console.log(error);
+    } catch {
       return {
         status: HttpStatus.BAD_REQUEST,
         message: 'Impossible de supprimer la faculté.',
