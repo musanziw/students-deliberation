@@ -13,11 +13,11 @@ export class Field {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @ManyToOne(() => Faculty, (faculty) => faculty.fields, {
-    onDelete: 'CASCADE',
+    cascade: ['insert', 'update'],
   })
   faculty: Faculty;
 
