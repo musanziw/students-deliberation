@@ -32,7 +32,7 @@ export class User {
   @Column({ default: true })
   is_active: boolean;
 
-  @OneToMany(() => Course, (course) => course.teacher)
+  @OneToMany(() => Course, (course) => course.user)
   courses: Course[];
 
   @ManyToMany(() => Role, (role) => role.users)

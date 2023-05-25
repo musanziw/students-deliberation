@@ -28,7 +28,7 @@ export class Course {
   promotion: Promotion;
 
   @ManyToOne(() => User, (user) => user.courses)
-  teacher: User;
+  user: User;
 
   @ManyToOne(() => Period, (period) => period.courses)
   period: Period;
