@@ -29,10 +29,13 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ default: true })
+  is_active: boolean;
+
   @OneToMany(() => Course, (course) => course.user)
   courses: Course[];
 
   @ManyToMany(() => Role)
-  @JoinTable()
+  @JoinTable({ name: 'user_roles' })
   roles: Role[];
 }
