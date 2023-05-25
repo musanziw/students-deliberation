@@ -7,12 +7,9 @@ export class Faculty {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
-  @OneToMany(() => Field, (field) => field.faculty, {
-    onDelete: 'CASCADE',
-    cascade: true,
-  })
+  @OneToMany(() => Field, (field) => field.faculty)
   fields: Field[];
 }
