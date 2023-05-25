@@ -19,9 +19,6 @@ export class CreateUserDto {
   )
   email: string;
 
-  @IsString({ message: 'Le mot de passe doit être une chaîne de caractères.' })
-  password: string;
-
   @IsArray({ message: 'Les rôles doivent être un tableau de rôles.' })
   roles: Role[];
 }
