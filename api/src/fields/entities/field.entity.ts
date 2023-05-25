@@ -16,7 +16,9 @@ export class Field {
   @Column()
   name: string;
 
-  @ManyToOne(() => Faculty, (faculty) => faculty.fields)
+  @ManyToOne(() => Faculty, (faculty) => faculty.fields, {
+    onDelete: 'CASCADE',
+  })
   faculty: Faculty;
 
   @OneToMany(() => Promotion, (promotion) => promotion.field, {
