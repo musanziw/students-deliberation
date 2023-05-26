@@ -13,11 +13,10 @@ export class Period {
   started_at;
 
   @Column({ type: 'datetime' })
-  ended_at: Date;
+  ended_at;
 
   @OneToMany(() => Course, (course) => course.period, {
     cascade: true,
-    onDelete: 'CASCADE',
   })
   courses: Course[];
 }
