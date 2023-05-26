@@ -20,17 +20,17 @@ export class Promotion {
   @Column()
   name: string;
 
-  @ManyToOne(() => Field, (field) => field.promotions)
+  @ManyToOne(() => Field, (field) => field.promotions, {
+    cascade: true,
+  })
   field: Field;
 
   @OneToMany(() => Course, (course) => course.promotion, {
-    onDelete: 'CASCADE',
     cascade: true,
   })
   courses: Course[];
 
   @OneToMany(() => Student, (student) => student.promotion, {
-    onDelete: 'CASCADE',
     cascade: true,
   })
   students: Student[];
