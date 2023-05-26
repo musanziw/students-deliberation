@@ -11,7 +11,7 @@ export class CreateCourseDto {
   credit: number;
 
   @IsObject({ message: 'Le professeur est requis.' })
-  teacher: { id: number };
+  user: { id: number };
 
   @IsObject({ message: 'La promotion est requise.' })
   promotion: { id: number };
