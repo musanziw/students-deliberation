@@ -27,15 +27,18 @@ export class Course {
   @ManyToOne(() => Promotion, (promotion) => promotion.courses)
   promotion: Promotion;
 
-  @ManyToOne(() => User, (user) => user.courses)
+  @ManyToOne(() => User, (user) => user.courses, {
+    cascade: true,
+  })
   user: User;
 
-  @ManyToOne(() => Period, (period) => period.courses)
+  @ManyToOne(() => Period, (period) => period.courses, {
+    cascade: true,
+  })
   period: Period;
 
   @OneToMany(() => Grade, (grade) => grade.course, {
     cascade: true,
-    onDelete: 'CASCADE',
   })
   grades: Grade[];
 }
