@@ -13,16 +13,18 @@ export class CoursesService {
   ) {}
 
   async create(createCourseDto: CreateCourseDto) {
-    const course = await this.courseRepository.save(createCourseDto);
-    if (!course)
+    try {
+      await this.courseRepository.save(createCourseDto);
+      return {
+        status: 201,
+        message: 'Le cours a été créé avec succès',
+      };
+    } catch {
       throw new HttpException(
         'Impossible de créer le cours',
         HttpStatus.BAD_REQUEST,
       );
-    return {
-      status: 201,
-      message: 'Le cours a été créé avec succès.',
-    };
+    }
   }
 
   async findAll() {
@@ -37,36 +39,40 @@ export class CoursesService {
   }
 
   async findOne(id: number) {
-    const course: Course = await this.courseRepository.findOneOrFail({
-      where: { id },
-      relations: ['period', 'user', 'promotion'],
-    });
-    if (!course)
+    try {
+      const course: Course = await this.courseRepository.findOneOrFail({
+        where: { id },
+        relations: ['period', 'user', 'promotion'],
+      });
+      return {
+        status: HttpStatus.OK,
+        course,
+      };
+    } catch {
       throw new HttpException(
         'Impossible de trouver le cours',
         HttpStatus.NOT_FOUND,
       );
-    return {
-      status: HttpStatus.OK,
-      course,
-    };
+    }
   }
 
   async update(id: number, updateCourseDto: UpdateCourseDto) {
-    const course: Course = await this.courseRepository.findOneBy({ id });
-    if (!course)
+    try {
+      const course: Course = await this.courseRepository.findOneBy({ id });
+      await this.courseRepository.save({
+        ...course,
+        ...updateCourseDto,
+      });
+      return {
+        status: HttpStatus.OK,
+        message: 'Le cours a été mis à jour avec succès',
+      };
+    } catch {
       throw new HttpException(
         'Impossible de trouver le cours',
         HttpStatus.NOT_FOUND,
       );
-    await this.courseRepository.save({
-      ...course,
-      ...updateCourseDto,
-    });
-    return {
-      status: HttpStatus.OK,
-      message: 'Le cours a été mis à jour avec succès.',
-    };
+    }
   }
 
   async remove(id: number) {
@@ -78,7 +84,7 @@ export class CoursesService {
       );
     return {
       status: HttpStatus.OK,
-      message: 'Le cours a été supprimé avec succès.',
+      message: 'Le cours a été supprimé avec succès',
     };
   }
 }
