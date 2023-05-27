@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
@@ -16,42 +16,37 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const password = this.config.get('DEFAULT_PASSWORD');
-    const salt: string = await bcrypt.genSalt(10);
-    const hashedPassword: string = await bcrypt.hash(password, salt);
     try {
+      const salt: string = await bcrypt.genSalt(10);
+      const password: string = await bcrypt.hash(
+        this.config.get('DEFAULT_PASSWORD'),
+        salt,
+      );
       await this.userRepository.save({
         ...createUserDto,
-        password: hashedPassword,
+        password,
       });
       return {
         status: HttpStatus.CREATED,
-        message: "L'utilisateur a bien été créé.",
+        message: "L'utilisateur a bien été créé",
       };
     } catch {
       return {
         status: HttpStatus.BAD_REQUEST,
-        message: "L'utilisateur n'a pas pu être créé.",
+        message: "Erreur lors de la création de l'utilisateur",
       };
     }
   }
 
   async findAll() {
-    try {
-      const users: User[] = await this.userRepository.find({
-        relations: ['roles'],
-        order: { id: 'ASC' },
-      });
-      return {
-        status: HttpStatus.OK,
-        users,
-      };
-    } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: "Les utilisateurs n'ont pas pu être récupérés.",
-      };
-    }
+    const users: User[] = await this.userRepository.find({
+      relations: ['roles'],
+      order: { id: 'ASC' },
+    });
+    return {
+      status: HttpStatus.OK,
+      users,
+    };
   }
 
   async findOne(id: number) {
@@ -67,7 +62,7 @@ export class UsersService {
     } catch {
       return {
         status: HttpStatus.NOT_FOUND,
-        message: "L'utilisateur n'a pas pu être récupéré.",
+        message: "L'utilisateur n'a pas pu être récupéré",
       };
     }
   }
@@ -83,30 +78,28 @@ export class UsersService {
       });
       return {
         status: HttpStatus.OK,
-        message: "L'utilisateur a bien été mis à jour.",
+        message: "L'utilisateur a bien été mis à jour",
       };
     } catch {
       return {
         status: HttpStatus.BAD_REQUEST,
-        message: "L'utilisateur n'a pas pu être mis à jour.",
+        message: "L'utilisateur n'a pas pu être mis à jour",
       };
     }
   }
 
   async remove(id: number) {
-    try {
-      await this.userRepository.delete({
-        id,
-      });
-      return {
-        status: HttpStatus.OK,
-        message: "L'utilisateur a bien été supprimé.",
-      };
-    } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: "L'utilisateur n'a pas pu être supprimé.",
-      };
-    }
+    const deleteResult = await this.userRepository.delete({
+      id,
+    });
+    if (!deleteResult.affected)
+      throw new HttpException(
+        "L'utilisateur n'a pas pu être supprimé",
+        HttpStatus.BAD_REQUEST,
+      );
+    return {
+      status: HttpStatus.OK,
+      message: "L'utilisateur a bien été supprimé",
+    };
   }
 }
