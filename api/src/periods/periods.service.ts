@@ -1,9 +1,10 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreatePeriodDto } from './dto/create-period.dto';
 import { UpdatePeriodDto } from './dto/update-period.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Period } from './entities/period.entity';
 import { Repository } from 'typeorm';
+import { DeleteResult, UpdateResult } from 'typeorm/browser';
 
 @Injectable()
 export class PeriodsService {
@@ -20,76 +21,68 @@ export class PeriodsService {
         message: 'Période créée avec succès.',
       };
     } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'Impossible de créer la période.',
-      };
+      throw new HttpException(
+        'Impossible de créer la période',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
   async findAll() {
-    try {
-      const periods = await this.periodRepository.find({
-        order: { id: 'ASC' },
-      });
-      return {
-        status: HttpStatus.OK,
-        message: 'Périodes récupérées avec succès.',
-        periods,
-      };
-    } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'Impossible de récupérer les périodes.',
-      };
-    }
+    const periods: Period[] = await this.periodRepository.find({
+      order: { started_at: 'DESC' },
+    });
+    return {
+      status: HttpStatus.OK,
+      periods,
+    };
   }
 
   async findOne(id: number) {
     try {
-      const period = await this.periodRepository.findOneOrFail({
+      const period: Period = await this.periodRepository.findOneOrFail({
         where: { id },
       });
       return {
         status: HttpStatus.OK,
-        message: 'Période récupérée avec succès.',
         period,
       };
     } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'Impossible de récupérer la période.',
-      };
+      throw new HttpException(
+        'Impossible de récupérer la période',
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
   async update(id: number, updatePeriodDto: UpdatePeriodDto) {
-    try {
-      await this.periodRepository.update(id, updatePeriodDto);
-      return {
-        status: HttpStatus.OK,
-        message: 'Période modifiée avec succès.',
-      };
-    } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'Impossible de modifier la période.',
-      };
-    }
+    const updateResult: UpdateResult = await this.periodRepository.update(
+      { id },
+      updatePeriodDto,
+    );
+    if (!updateResult.affected)
+      throw new HttpException(
+        'Impossible de mettre à jour la période',
+        HttpStatus.NOT_FOUND,
+      );
+    return {
+      status: HttpStatus.OK,
+      message: 'Période modifiée avec succès',
+    };
   }
 
   async remove(id: number) {
-    try {
-      await this.periodRepository.delete({ id });
-      return {
-        status: HttpStatus.OK,
-        message: 'Période supprimée avec succès.',
-      };
-    } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'Impossible de supprimer la période.',
-      };
-    }
+    const deleteResult: DeleteResult = await this.periodRepository.delete({
+      id,
+    });
+    if (!deleteResult.affected)
+      throw new HttpException(
+        'Impossible de supprimer la période',
+        HttpStatus.NOT_FOUND,
+      );
+    return {
+      status: HttpStatus.OK,
+      message: 'Période supprimée avec succès',
+    };
   }
 }
