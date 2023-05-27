@@ -15,8 +15,6 @@ export class Period {
   @Column({ type: 'datetime' })
   ended_at;
 
-  @OneToMany(() => Course, (course) => course.period, {
-    cascade: true,
-  })
+  @OneToMany(() => Course, (course) => course.period)
   courses: Course[];
 }
