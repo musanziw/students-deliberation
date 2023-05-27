@@ -1,9 +1,10 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateFieldDto } from './dto/create-field.dto';
 import { UpdateFieldDto } from './dto/update-field.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Field } from './entities/field.entity';
+import { DeleteResult } from 'typeorm/browser';
 
 @Injectable()
 export class FieldsService {
@@ -17,32 +18,25 @@ export class FieldsService {
       await this.fieldRepository.save(createFieldDto);
       return {
         status: HttpStatus.CREATED,
-        message: 'La filière a bien été créé.',
+        message: 'La filière a bien été créée',
       };
     } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: "La filière n'a pas pu être créé.",
-      };
+      throw new HttpException(
+        'Impossible de créer la filière',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
   async findAll() {
-    try {
-      const fields: Field[] = await this.fieldRepository.find({
-        order: { id: 'ASC' },
-        relations: ['faculty'],
-      });
-      return {
-        status: HttpStatus.OK,
-        fields,
-      };
-    } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: "Les filières n'ont pas pu être récupérées.",
-      };
-    }
+    const fields: Field[] = await this.fieldRepository.find({
+      order: { id: 'ASC' },
+      relations: ['faculty'],
+    });
+    return {
+      status: HttpStatus.OK,
+      fields,
+    };
   }
 
   async findOne(id: number) {
@@ -55,10 +49,10 @@ export class FieldsService {
         field,
       };
     } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: "La filière n'a pas pu être récupérée.",
-      };
+      throw new HttpException(
+        'Impossible de trouver la filière',
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -73,28 +67,28 @@ export class FieldsService {
       });
       return {
         status: HttpStatus.OK,
-        message: 'La filière a bien été modifiée.',
+        message: 'La filière a bien été modifiée',
       };
     } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: "La filière n'a pas pu être modifiée.",
-      };
+      throw new HttpException(
+        'Impossible de mettre à jour la filière',
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
   async remove(id: number) {
-    try {
-      await this.fieldRepository.delete({ id });
-      return {
-        status: HttpStatus.OK,
-        message: 'La filière a bien été supprimée.',
-      };
-    } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: "La filière n'a pas pu être supprimée.",
-      };
-    }
+    const deleteResult: DeleteResult = await this.fieldRepository.delete({
+      id,
+    });
+    if (!deleteResult.affected)
+      throw new HttpException(
+        'Impossible de supprimer la filière',
+        HttpStatus.NOT_FOUND,
+      );
+    return {
+      status: HttpStatus.OK,
+      message: 'La filière a bien été supprimée',
+    };
   }
 }
