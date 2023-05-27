@@ -21,9 +21,6 @@ export class Field {
   })
   faculty: Faculty;
 
-  @OneToMany(() => Promotion, (promotion) => promotion.field, {
-    onDelete: 'CASCADE',
-    cascade: true,
-  })
+  @OneToMany(() => Promotion, (promotion) => promotion.field)
   promotions: Promotion[];
 }
