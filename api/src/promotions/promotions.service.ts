@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,31 +17,25 @@ export class PromotionsService {
       await this.promotionRepository.save(createPromotionDto);
       return {
         status: HttpStatus.CREATED,
-        message: 'Promotion created successfully',
+        message: 'La promotion a été créée avec succès',
       };
     } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'Promotion created failed',
-      };
+      throw new HttpException(
+        'Une erreur est survenue lors de la création de la promotion',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   async findAll() {
-    try {
-      const promotions = await this.promotionRepository.find({
-        order: { id: 'ASC' },
-      });
-      return {
-        status: HttpStatus.OK,
-        promotions,
-      };
-    } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'Promotions not found',
-      };
-    }
+    const promotions: Promotion[] = await this.promotionRepository.find({
+      order: { id: 'ASC' },
+      relations: ['field'],
+    });
+    return {
+      status: HttpStatus.OK,
+      promotions,
+    };
   }
 
   async findOne(id: number) {
@@ -49,6 +43,7 @@ export class PromotionsService {
       const promotion: Promotion = await this.promotionRepository.findOneOrFail(
         {
           where: { id },
+          relations: ['field'],
         },
       );
       return {
@@ -56,48 +51,39 @@ export class PromotionsService {
         promotion,
       };
     } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'Impossible de trouver la promotion.',
-      };
+      throw new HttpException(
+        'La promotion est introuvable',
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
   async update(id: number, updatePromotionDto: UpdatePromotionDto) {
     try {
-      const promotion: Promotion = await this.promotionRepository.findOneOrFail(
-        {
-          where: { id },
-        },
-      );
-      await this.promotionRepository.save({
-        ...promotion,
-        ...updatePromotionDto,
-      });
+      await this.promotionRepository.findOneOrFail({ where: { id } });
+      await this.promotionRepository.update({ id }, updatePromotionDto);
       return {
         status: HttpStatus.OK,
-        message: 'La promotion a été mise à jour avec succès.',
+        message: 'La promotion a été modifiée avec succès.',
       };
     } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'Impossible de mettre à jour la promotion.',
-      };
+      throw new HttpException(
+        'La promotion est introuvable',
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
   async remove(id: number) {
-    try {
-      await this.promotionRepository.delete({ id });
-      return {
-        status: HttpStatus.OK,
-        message: 'La promotion a été supprimée avec succès.',
-      };
-    } catch {
-      return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'Impossible de supprimer la promotion.',
-      };
-    }
+    const deleteResult = await this.promotionRepository.delete({ id });
+    if (!deleteResult.affected)
+      throw new HttpException(
+        'La promotion est introuvable',
+        HttpStatus.NOT_FOUND,
+      );
+    return {
+      status: HttpStatus.OK,
+      message: 'La promotion a été supprimée avec succès.',
+    };
   }
 }
