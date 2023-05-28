@@ -10,6 +10,8 @@ export class Faculty {
   @Column({ unique: true })
   name: string;
 
-  @OneToMany(() => Field, (field) => field.faculty)
+  @OneToMany(() => Field, (field) => field.faculty, {
+    cascade: true,
+  })
   fields: Field[];
 }

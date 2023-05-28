@@ -16,11 +16,14 @@ export class Field {
   @Column({ unique: true })
   name: string;
 
-  @ManyToOne(() => Faculty, (faculty) => faculty.fields, {
-    cascade: ['insert', 'update'],
-  })
+  @Column({ default: true })
+  is_active: boolean;
+
+  @ManyToOne(() => Faculty, (faculty) => faculty.fields)
   faculty: Faculty;
 
-  @OneToMany(() => Promotion, (promotion) => promotion.field)
+  @OneToMany(() => Promotion, (promotion) => promotion.field, {
+    cascade: true,
+  })
   promotions: Promotion[];
 }

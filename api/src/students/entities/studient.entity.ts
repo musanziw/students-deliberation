@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { Promotion } from '../../promotions/entities/promotion.entity';
 import { Course } from '../../courses/entities/course.entity';
-import { Report } from '../../reports/entities/report.entity';
+import { Grade } from '../../grades/entities/grade.entity';
 
 @Entity()
 export class Student {
@@ -25,14 +25,17 @@ export class Student {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ unique: true })
   personal_number: string;
 
-  @Column()
+  @Column({ default: false })
   as_complementary_course: boolean;
+
+  @Column({ default: true })
+  is_active: boolean;
 
   @ManyToOne(() => Promotion, (promotion) => promotion.students)
   promotion: Promotion;
@@ -43,6 +46,8 @@ export class Student {
   })
   courses: Course[];
 
-  @OneToMany(() => Report, (report) => report.student)
-  reports: Report[];
+  @OneToMany(() => Grade, (grade) => grade.student, {
+    cascade: true,
+  })
+  grades: Grade[];
 }

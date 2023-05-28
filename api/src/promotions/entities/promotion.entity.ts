@@ -20,9 +20,7 @@ export class Promotion {
   @Column()
   name: string;
 
-  @ManyToOne(() => Field, (field) => field.promotions, {
-    cascade: true,
-  })
+  @ManyToOne(() => Field, (field) => field.promotions)
   field: Field;
 
   @OneToMany(() => Course, (course) => course.promotion, {
