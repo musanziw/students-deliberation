@@ -1,4 +1,10 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateStudentDto {
   @IsString({ message: 'Le prénom est requis.' })
@@ -10,7 +16,7 @@ export class CreateStudentDto {
   @IsString({ message: 'Le nom est requis.' })
   name;
 
-  @IsString({ message: "L'email est requis." })
+  @IsEmail({}, { message: "L'email est requis." })
   email;
 
   @IsString({ message: 'Le numéro matricule est requis.' })
@@ -19,4 +25,10 @@ export class CreateStudentDto {
   @IsBoolean()
   @IsOptional()
   as_complementary_course;
+
+  @IsObject({ message: 'La promotion est requise' })
+  promotion: { id: number };
+
+  @IsOptional()
+  courses: any[];
 }
