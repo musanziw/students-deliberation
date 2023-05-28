@@ -42,7 +42,7 @@ export class StudentsService {
     try {
       const student = await this.studentRepository.findOneOrFail({
         where: { id },
-        relations: ['promotion', 'courses', 'reports'],
+        relations: ['promotion', 'courses'],
       });
       return {
         status: HttpStatus.OK,
