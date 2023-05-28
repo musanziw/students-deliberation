@@ -23,7 +23,7 @@ export class User {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()
@@ -32,10 +32,14 @@ export class User {
   @Column({ default: true })
   is_active: boolean;
 
-  @OneToMany(() => Course, (course) => course.user)
+  @OneToMany(() => Course, (course) => course.user, {
+    cascade: true,
+  })
   courses: Course[];
 
-  @ManyToMany(() => Role, (role) => role.users)
+  @ManyToMany(() => Role, (role) => role.users, {
+    cascade: true,
+  })
   @JoinTable({ name: 'user_roles' })
   roles: Role[];
 }
