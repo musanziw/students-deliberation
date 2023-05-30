@@ -30,7 +30,7 @@ export class CoursesService {
   async findAll() {
     const courses: Course[] = await this.courseRepository.find({
       order: { id: 'ASC' },
-      relations: ['period', 'user', 'promotion'],
+      relations: ['user', 'promotion'],
     });
     return {
       status: HttpStatus.OK,
