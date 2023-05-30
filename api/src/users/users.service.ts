@@ -6,6 +6,9 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UpdateResult } from 'typeorm/browser';
 
 @Injectable()
 export class UsersService {
@@ -53,7 +56,7 @@ export class UsersService {
     try {
       const user: User = await this.userRepository.findOneOrFail({
         where: { id },
-        relations: ['roles'],
+        relations: ['roles', 'courses', 'courses.promotion'],
       });
       return {
         status: HttpStatus.OK,
@@ -101,5 +104,55 @@ export class UsersService {
       status: HttpStatus.OK,
       message: "L'utilisateur a bien été supprimé",
     };
+  }
+
+  async profile(id: number) {
+    try {
+      const user: User = await this.userRepository.findOneOrFail({
+        where: { id },
+      });
+      return {
+        status: HttpStatus.OK,
+        user,
+      };
+    } catch {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        message: 'Profile introuvable',
+      };
+    }
+  }
+
+  async updateProfile(id: number, updateUserInfoDto: UpdateProfileDto) {
+    const updateResult: UpdateResult = await this.userRepository.update(
+      { id },
+      updateUserInfoDto,
+    );
+    if (!updateResult.affected)
+      throw new HttpException(
+        "Le profile n'a pas pu être mis à jour",
+        HttpStatus.BAD_REQUEST,
+      );
+    return {
+      status: HttpStatus.OK,
+      message: 'Le profile a bien été mis à jour',
+    };
+  }
+
+  async updatePassword(id: number, { newPassword }: UpdatePasswordDto) {
+    try {
+      const salt: string = await bcrypt.genSalt(10);
+      const password: string = await bcrypt.hash(newPassword, salt);
+      await this.userRepository.update({ id }, { password });
+      return {
+        status: HttpStatus.OK,
+        message: 'Le mot de passe a bien été mis à jour',
+      };
+    } catch {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: "Le mot de passe n'a pas pu être mis à jour",
+      };
+    }
   }
 }
