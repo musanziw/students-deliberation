@@ -7,7 +7,7 @@ import { StudentsModule } from './students/students.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { CoursesModule } from './courses/courses.module';
 import { RolesModule } from './roles/roles.module';
-import { PeriodsModule } from './periods/periods.module';
+import { CalendarsModule } from './calendar/calendars.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -23,7 +23,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     PromotionsModule,
     CoursesModule,
     RolesModule,
-    PeriodsModule,
+    CalendarsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
