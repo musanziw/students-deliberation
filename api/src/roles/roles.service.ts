@@ -31,7 +31,6 @@ export class RolesService {
   async findAll() {
     const roles: Role[] = await this.roleRepository.find({
       order: { id: 'ASC' },
-      relations: ['users'],
     });
     return {
       status: HttpStatus.OK,
