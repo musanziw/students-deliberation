@@ -7,17 +7,16 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { PeriodsService } from './periods.service';
-import { CreatePeriodDto } from './dto/create-period.dto';
-import { UpdatePeriodDto } from './dto/update-period.dto';
-import { DatePipe } from './pipes/date.pipe';
+import { CalendarsService } from './calendars.service';
+import { CreateCalendarDto } from './dto/create-calendar.dto';
+import { UpdateCalendarDto } from './dto/update-calendar.dto';
 
 @Controller('periods')
-export class PeriodsController {
-  constructor(private readonly periodsService: PeriodsService) {}
+export class CalendarsController {
+  constructor(private readonly periodsService: CalendarsService) {}
 
   @Post()
-  create(@Body('', new DatePipe()) createPeriodDto: CreatePeriodDto) {
+  create(@Body() createPeriodDto: CreateCalendarDto) {
     return this.periodsService.create(createPeriodDto);
   }
 
@@ -32,10 +31,7 @@ export class PeriodsController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body('', new DatePipe()) updatePeriodDto: UpdatePeriodDto,
-  ) {
+  update(@Param('id') id: string, @Body() updatePeriodDto: UpdateCalendarDto) {
     return this.periodsService.update(+id, updatePeriodDto);
   }
 

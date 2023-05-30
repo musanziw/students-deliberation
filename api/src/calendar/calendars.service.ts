@@ -1,19 +1,19 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreatePeriodDto } from './dto/create-period.dto';
-import { UpdatePeriodDto } from './dto/update-period.dto';
+import { CreateCalendarDto } from './dto/create-calendar.dto';
+import { UpdateCalendarDto } from './dto/update-calendar.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Period } from './entities/period.entity';
+import { Period } from './entities/calendar.entity';
 import { Repository } from 'typeorm';
 import { DeleteResult, UpdateResult } from 'typeorm/browser';
 
 @Injectable()
-export class PeriodsService {
+export class CalendarsService {
   constructor(
     @InjectRepository(Period)
     private periodRepository: Repository<Period>,
   ) {}
 
-  async create(createPeriodDto: CreatePeriodDto) {
+  async create(createPeriodDto: CreateCalendarDto) {
     try {
       await this.periodRepository.save(createPeriodDto);
       return {
@@ -55,7 +55,7 @@ export class PeriodsService {
     }
   }
 
-  async update(id: number, updatePeriodDto: UpdatePeriodDto) {
+  async update(id: number, updatePeriodDto: UpdateCalendarDto) {
     const updateResult: UpdateResult = await this.periodRepository.update(
       { id },
       updatePeriodDto,
