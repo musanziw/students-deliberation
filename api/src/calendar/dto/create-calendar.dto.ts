@@ -1,6 +1,6 @@
 import { IsInt, IsNotEmpty } from 'class-validator';
 
-export class CreatePeriodDto {
+export class CreateCalendarDto {
   @IsInt({ message: 'Le semestre est requis.' })
   semester: number;
 
