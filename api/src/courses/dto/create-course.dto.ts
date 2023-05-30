@@ -15,7 +15,4 @@ export class CreateCourseDto {
 
   @IsObject({ message: 'La promotion est requise.' })
   promotion: { id: number };
-
-  @IsObject({ message: 'La période est requise.' })
-  period: { id: number };
 }
