@@ -3,14 +3,17 @@ import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Student } from './entities/studient.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { DeleteResult } from 'typeorm/browser';
+import { Grade } from '../grades/entities/grade.entity';
 
 @Injectable()
 export class StudentsService {
   constructor(
     @InjectRepository(Student)
     private studentRepository: Repository<Student>,
+
+    private dataSource: DataSource,
   ) {}
 
   async create(createStudentDto: CreateStudentDto) {
@@ -90,6 +93,47 @@ export class StudentsService {
     return {
       status: HttpStatus.OK,
       message: "L'étudiant a été supprimé avec succès",
+    };
+  }
+
+  calculatePercentage(grades: Grade[]) {
+    const sum = grades.reduce(
+      (acc, grade) => acc + (grade.average / 20) * grade.course.credit,
+      0,
+    );
+    const creditAttempt = grades.reduce(
+      (acc, grade) => acc + grade.course.credit,
+      0,
+    );
+    return (sum / creditAttempt) * 100;
+  }
+
+  async getGrades(id: number) {
+    const grades = await this.dataSource.manager
+      .createQueryBuilder(Grade, 'grade')
+      .leftJoinAndSelect('grade.course', 'course')
+      .leftJoinAndSelect('grade.session', 'session')
+      .where('studentId = :id', { id })
+      .getMany();
+
+    const levels: number[] = [
+      ...new Set(grades.map((grade) => grade.student_level)),
+    ];
+
+    const gradesByLevel: Grade[][] = levels.map((level) =>
+      grades.filter((grade) => {
+        return grade.student_level === level;
+      }),
+    );
+
+    const pourcentages: number[] = gradesByLevel.map((grades) =>
+      this.calculatePercentage(grades),
+    );
+
+    return {
+      status: HttpStatus.OK,
+      grades: gradesByLevel,
+      pourcentages,
     };
   }
 }
