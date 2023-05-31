@@ -6,9 +6,6 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { UpdateProfileDto } from './dto/update-profile.dto';
-import { UpdatePasswordDto } from './dto/update-password.dto';
-import { UpdateResult } from 'typeorm/browser';
 
 @Injectable()
 export class UsersService {
@@ -106,6 +103,7 @@ export class UsersService {
     };
   }
 
+  /**
   async profile(id: number) {
     try {
       const user: User = await this.userRepository.findOneOrFail({
@@ -155,4 +153,6 @@ export class UsersService {
       };
     }
   }
+
+  **/
 }
