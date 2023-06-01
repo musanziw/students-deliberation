@@ -6,12 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
+import { AuthGuard } from '../auth/guard/auth.guard';
 
 @Controller('sessions')
+@UseGuards(AuthGuard)
 export class SessionsController {
   constructor(private readonly periodsService: SessionsService) {}
 

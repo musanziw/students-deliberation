@@ -6,6 +6,9 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
+import { UpdateResult } from 'typeorm/browser';
+import { UpdatePasswordDto } from '../auth/dto/update-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -47,6 +50,23 @@ export class UsersService {
       status: HttpStatus.OK,
       users,
     };
+  }
+
+  async profile(id: number) {
+    try {
+      const user: User = await this.userRepository.findOneOrFail({
+        where: { id },
+      });
+      return {
+        status: HttpStatus.OK,
+        user,
+      };
+    } catch {
+      throw new HttpException(
+        "L'utilisateur n'a pas pu être récupéré",
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 
   async findOne(id: number) {
@@ -103,24 +123,6 @@ export class UsersService {
     };
   }
 
-  /**
-  async profile(id: number) {
-    try {
-      const user: User = await this.userRepository.findOneOrFail({
-        where: { id },
-      });
-      return {
-        status: HttpStatus.OK,
-        user,
-      };
-    } catch {
-      return {
-        status: HttpStatus.NOT_FOUND,
-        message: 'Profile introuvable',
-      };
-    }
-  }
-
   async updateProfile(id: number, updateUserInfoDto: UpdateProfileDto) {
     const updateResult: UpdateResult = await this.userRepository.update(
       { id },
@@ -154,5 +156,9 @@ export class UsersService {
     }
   }
 
-  **/
+  async findByEmail(email: string) {
+    return await this.userRepository.findOneOrFail({
+      where: { email },
+    });
+  }
 }
