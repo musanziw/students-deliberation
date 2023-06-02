@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SigninDto } from './dto/signin.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
@@ -22,12 +30,12 @@ export class AuthController {
     return this.authService.profile(req);
   }
 
-  @Post('update-profile')
+  @Patch('profile')
   updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
     return this.authService.updateProfile(req, updateProfileDto);
   }
 
-  @Post('update-password')
+  @Patch('update-password')
   updatePassword(@Req() req, @Body() updatePasswordDto: UpdatePasswordDto) {
     return this.authService.updatePassword(req, updatePasswordDto);
   }
