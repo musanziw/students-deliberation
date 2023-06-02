@@ -6,6 +6,7 @@ import { Student } from './entities/studient.entity';
 import { DataSource, Repository } from 'typeorm';
 import { DeleteResult } from 'typeorm/browser';
 import { Grade } from '../grades/entities/grade.entity';
+import { Promotion } from '../promotions/entities/promotion.entity';
 
 @Injectable()
 export class StudentsService {
@@ -108,6 +109,10 @@ export class StudentsService {
     return (sum / creditAttempt) * 100;
   }
 
+  getLevels(grades: Grade[]) {
+    return [...new Set(grades.map((grade) => grade.student_level))];
+  }
+
   async getGrades(id: number) {
     const grades = await this.dataSource.manager
       .createQueryBuilder(Grade, 'grade')
@@ -116,24 +121,88 @@ export class StudentsService {
       .where('studentId = :id', { id })
       .getMany();
 
-    const levels: number[] = [
-      ...new Set(grades.map((grade) => grade.student_level)),
-    ];
+    const levels: number[] = this.getLevels(grades);
 
-    const gradesByLevel: Grade[][] = levels.map((level) =>
+    return levels.map((level) =>
       grades.filter((grade) => {
         return grade.student_level === level;
       }),
     );
+  }
 
-    const pourcentages: number[] = gradesByLevel.map((grades) =>
-      this.calculatePercentage(grades),
+  deliberated(grades: Grade[]) {
+    const percentage = this.calculatePercentage(grades);
+    return {
+      percentage,
+      level: grades[0].student_level,
+      grades,
+    };
+  }
+
+  async deliberate(id: number) {
+    const gradesByLevel = await this.getGrades(id);
+    const deliberatedGrades = gradesByLevel.map((grades) =>
+      this.deliberated(grades),
     );
-
     return {
       status: HttpStatus.OK,
-      grades: gradesByLevel,
-      pourcentages,
+      deliberatedGrades,
+    };
+  }
+
+  async succedWith(studentId: number, Grades: Grade[]) {
+    const student = await this.studentRepository.findOneOrFail({
+      where: { id: studentId },
+      relations: ['promotion'],
+    });
+    const promotion = await this.dataSource.manager
+      .createQueryBuilder(Promotion, 'promotion')
+      .where('level = :level', { level: student.promotion.level })
+      .getOne();
+    const failedGrades = Grades.filter((grade) => grade.average < 10);
+    const additionalCourse = failedGrades.map((grade) => grade.course);
+    student.as_complementary_course = true;
+    student.promotion = promotion;
+    student.courses = [...student.courses, ...additionalCourse];
+    return {
+      status: HttpStatus.OK,
+      message:
+        "L'étudiant a été ajouter à la liste des étudiants ayant des cours supplémentaires",
+    };
+  }
+
+  async faillure(studentId: number, Grades: Grade[]) {
+    const student = await this.studentRepository.findOneOrFail({
+      where: { id: studentId },
+      relations: ['promotion'],
+    });
+    const failedGrades = Grades.filter((grade) => grade.average < 10);
+    const additionalCourse = failedGrades.map((grade) => grade.course);
+    student.as_complementary_course = true;
+    student.courses = [...student.courses, ...additionalCourse];
+    return {
+      status: HttpStatus.OK,
+      message:
+        "L'étudiant a été ajouter à la liste des étudiants en rattrapage",
+    };
+  }
+
+  async success(studentId: number) {
+    const student = await this.studentRepository.findOneOrFail({
+      where: { id: studentId },
+      relations: ['promotion'],
+    });
+    if (student.courses) {
+      student.courses = [];
+    }
+    student.as_complementary_course = false;
+    student.promotion = await this.dataSource.manager
+      .createQueryBuilder(Promotion, 'promotion')
+      .where('level = :level', { level: student.promotion.level + 1 })
+      .getOne();
+    return {
+      status: HttpStatus.OK,
+      message: "L'étudiant a été promu avec succès",
     };
   }
 }
