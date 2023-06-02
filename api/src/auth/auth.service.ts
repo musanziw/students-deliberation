@@ -23,7 +23,7 @@ export class AuthService {
         'Aucun utilisateur trouvé, veuillez vérifier vos identifiants',
         HttpStatus.NOT_FOUND,
       );
-    const payload = { sub: user.id, email: user.email };
+    const payload = { id: user.id, email: user.email };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
