@@ -7,7 +7,6 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
-import { UpdateResult } from 'typeorm/browser';
 import { UpdatePasswordDto } from '../auth/dto/update-password.dto';
 
 @Injectable()
@@ -124,19 +123,18 @@ export class UsersService {
   }
 
   async updateProfile(id: number, updateUserInfoDto: UpdateProfileDto) {
-    const updateResult: UpdateResult = await this.userRepository.update(
-      { id },
-      updateUserInfoDto,
-    );
-    if (!updateResult.affected)
+    try {
+      await this.userRepository.update({ id }, updateUserInfoDto);
+      return {
+        status: HttpStatus.OK,
+        message: 'Le profile a bien été mis à jour',
+      };
+    } catch {
       throw new HttpException(
         "Le profile n'a pas pu être mis à jour",
         HttpStatus.BAD_REQUEST,
       );
-    return {
-      status: HttpStatus.OK,
-      message: 'Le profile a bien été mis à jour',
-    };
+    }
   }
 
   async updatePassword(id: number, { newPassword }: UpdatePasswordDto) {
