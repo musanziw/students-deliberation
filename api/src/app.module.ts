@@ -7,7 +7,6 @@ import { StudentsModule } from './students/students.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { CoursesModule } from './courses/courses.module';
 import { RolesModule } from './roles/roles.module';
-import { SessionsModule } from './sessions/sessions.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -23,7 +22,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     PromotionsModule,
     CoursesModule,
     RolesModule,
-    SessionsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
