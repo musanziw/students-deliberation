@@ -9,9 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PromotionsService } from './promotions.service';
-import { CreatePromotionDto } from './dto/create-promotion.dto';
-import { UpdatePromotionDto } from './dto/update-promotion.dto';
-import { AuthGuard } from '../auth/guard/auth.guard';
+import { AuthGuard } from '../auth/guard';
+import { CreatePromotionDto, UpdatePromotionDto } from './dto';
 
 @Controller('promotions')
 @UseGuards(AuthGuard)

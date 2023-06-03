@@ -8,11 +8,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SigninDto } from './dto/signin.dto';
-import { UpdatePasswordDto } from './dto/update-password.dto';
+import { AuthGuard, Public } from './guard';
+import { SigninDto, UpdatePasswordDto } from './dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { AuthGuard } from './guard/auth.guard';
-import { Public } from './guard/public.guard';
 
 @Controller()
 @UseGuards(AuthGuard)

@@ -2,10 +2,9 @@ import * as bcrypt from 'bcrypt';
 import { HttpException, HttpStatus, Injectable, Req } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
-import { SigninDto } from './dto/signin.dto';
 import { JwtService } from '@nestjs/jwt';
-import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { SigninDto, UpdatePasswordDto } from './dto';
 
 @Injectable()
 export class AuthService {

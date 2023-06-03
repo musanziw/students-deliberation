@@ -9,9 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FieldsService } from './fields.service';
-import { CreateFieldDto } from './dto/create-field.dto';
-import { UpdateFieldDto } from './dto/update-field.dto';
-import { AuthGuard } from '../auth/guard/auth.guard';
+import { AuthGuard } from '../auth/guard';
+import { CreateFieldDto, UpdateFieldDto } from './dto';
 
 @Controller('fields')
 @UseGuards(AuthGuard)

@@ -9,10 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { StudentsService } from './students.service';
-import { CreateStudentDto } from './dto/create-student.dto';
-import { UpdateStudentDto } from './dto/update-student.dto';
-import { AuthGuard } from '../auth/guard/auth.guard';
-import { Grade } from '../grades/entities/grade.entity';
+import { AuthGuard } from '../auth/guard';
+import { CreateStudentDto, UpdateStudentDto } from './dto';
 
 @Controller('students')
 @UseGuards(AuthGuard)
@@ -47,20 +45,5 @@ export class StudentsController {
   @Get('grades/:id')
   getGrades(@Param('id') id: string) {
     return this.studentsService.deliberate(+id);
-  }
-
-  @Post('success/:id')
-  success(@Param('id') id: string) {
-    return this.studentsService.success(+id);
-  }
-
-  @Post('fail/:id/:grades')
-  faillure(@Param('id') id: string, @Param('grades') grades: Grade[]) {
-    return this.studentsService.faillure(+id, grades);
-  }
-
-  @Post('fail/:id/:grades')
-  succedWith(@Param('id') id: string, @Param('grades') grades: Grade[]) {
-    return this.studentsService.succedWith(+id, grades);
   }
 }

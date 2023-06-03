@@ -9,9 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
-import { CreateCourseDto } from './dto/create-course.dto';
-import { UpdateCourseDto } from './dto/update-course.dto';
-import { AuthGuard } from '../auth/guard/auth.guard';
+import { AuthGuard } from '../auth/guard';
+import { CreateCourseDto, UpdateCourseDto } from './dto';
 
 @Controller('courses')
 @UseGuards(AuthGuard)

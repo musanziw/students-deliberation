@@ -1,10 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateFieldDto } from './dto/create-field.dto';
-import { UpdateFieldDto } from './dto/update-field.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Field } from './entities/field.entity';
 import { DeleteResult } from 'typeorm/browser';
+import { CreateFieldDto, UpdateFieldDto } from './dto';
 
 @Injectable()
 export class FieldsService {

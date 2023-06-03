@@ -1,9 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreatePromotionDto } from './dto/create-promotion.dto';
-import { UpdatePromotionDto } from './dto/update-promotion.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Promotion } from './entities/promotion.entity';
 import { Repository } from 'typeorm';
+import { CreatePromotionDto, UpdatePromotionDto } from './dto';
 
 @Injectable()
 export class PromotionsService {

@@ -1,13 +1,12 @@
 import * as bcrypt from 'bcrypt';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
-import { UpdatePasswordDto } from '../auth/dto/update-password.dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
+import { UpdatePasswordDto } from '../auth/dto';
 
 @Injectable()
 export class UsersService {

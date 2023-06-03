@@ -9,9 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
-import { AuthGuard } from '../auth/guard/auth.guard';
+import { AuthGuard } from '../auth/guard';
+import { CreateRoleDto, UpdateRoleDto } from './dto';
 
 @Controller('roles')
 @UseGuards(AuthGuard)
@@ -34,7 +33,7 @@ export class RolesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
+  update({ id, updateRoleDto }: { id: string; updateRoleDto: UpdateRoleDto }) {
     return this.rolesService.update(+id, updateRoleDto);
   }
 
