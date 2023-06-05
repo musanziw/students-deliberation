@@ -1,5 +1,4 @@
 import { IsArray, IsString } from 'class-validator';
-import { Role } from '../../roles/entities/role.entity';
 
 export class UpdateUserDto {
   @IsString({ message: 'Le prénom doit être une chaîne de caractères.' })
@@ -14,5 +13,5 @@ export class UpdateUserDto {
   name: string;
 
   @IsArray({ message: 'Les rôles doivent être un tableau de rôles.' })
-  roles: Role[];
+  roles: any[];
 }

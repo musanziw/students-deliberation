@@ -5,14 +5,11 @@ export class CreateGradeDto {
   @Max(20, { message: 'La note annuelle doit être inférieure à 20' })
   average;
 
-  @IsNumber({}, { message: 'La promotion est requise' })
-  student_level;
+  @IsNumber({}, { message: 'La session est requise' })
+  session;
 
   @IsObject({ message: 'Le cours est requis' })
   course: { id: number };
-
-  @IsObject({ message: 'La session est requise' })
-  session: { id: number };
 
   @IsObject({ message: "L'étudiant est requis" })
   student: { id: number };

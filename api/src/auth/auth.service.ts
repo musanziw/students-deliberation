@@ -1,49 +1,93 @@
 import * as bcrypt from 'bcrypt';
 import { HttpException, HttpStatus, Injectable, Req } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
-import { User } from '../users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { SigninDto, UpdatePasswordDto } from './dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { GetUser } from './decorator';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    private usersService: UsersService,
+    private prismaService: PrismaService,
   ) {}
 
   async signin(signinDto: SigninDto) {
     const { email, password } = signinDto;
-    const user: User = await this.usersService.findByEmail(email);
-    const isMatch: boolean = await bcrypt.compare(password, user.password);
+    const user = await this.prismaService.user.findUnique({
+      where: { email },
+    });
+    const isMatch: boolean = await bcrypt.compare(password, user?.password);
     if (!user || !isMatch)
       throw new HttpException(
         'Aucun utilisateur trouvé, veuillez vérifier vos identifiants',
         HttpStatus.NOT_FOUND,
       );
-    const payload = { id: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
   }
 
-  async profile(@Req() req) {
-    const { id } = req.user;
-    const { user } = await this.usersService.profile(id);
+  async profile(@GetUser() user) {
+    const { sub: id } = user;
+    const data = await this.prismaService.user.findUnique({
+      where: { id },
+    });
     return {
       status: HttpStatus.OK,
-      user,
+      user: data,
     };
   }
 
-  async updateProfile(@Req() req, updateUserInfoDto: UpdateProfileDto) {
-    const { id } = req.user;
-    return await this.usersService.updateProfile(id, updateUserInfoDto);
+  async updateProfile(@GetUser() user, updateProfileDto: UpdateProfileDto) {
+    const { sub: id } = user;
+    try {
+      await this.prismaService.user.update({
+        where: { id },
+        data: updateProfileDto,
+      });
+      return {
+        status: HttpStatus.OK,
+        message: 'Le profil a été mis à jour avec succès',
+      };
+    } catch {
+      throw new HttpException(
+        'La mise à jour du profil a échoué',
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 
-  async updatePassword(@Req() req, updatePasswordDto: UpdatePasswordDto) {
-    const { id } = req.user;
-    return await this.usersService.updatePassword(id, updatePasswordDto);
+  async updatePassword(@GetUser() user, updatePasswordDto: UpdatePasswordDto) {
+    const { sub: id } = user;
+    const data = await this.prismaService.user.findUnique({
+      where: { id },
+    });
+    const { oldPassword, newPassword } = updatePasswordDto;
+    const isMatch: boolean = await bcrypt.compare(oldPassword, data?.password);
+    if (!isMatch)
+      throw new HttpException(
+        "L'ancien mot de passe est incorrect",
+        HttpStatus.BAD_REQUEST,
+      );
+    const salt: string = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    try {
+      await this.prismaService.user.update({
+        where: { id },
+        data: { password: hashedPassword },
+      });
+      return {
+        status: HttpStatus.OK,
+        message: 'Le mot de passe a été mis à jour avec succès',
+      };
+    } catch {
+      throw new HttpException(
+        'La mise à jour du mot de passe a échoué',
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 }

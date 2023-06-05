@@ -1,5 +1,4 @@
 import { IsArray, IsEmail, IsString } from 'class-validator';
-import { Role } from '../../roles/entities/role.entity';
 
 export class CreateUserDto {
   @IsString({ message: 'Le prénom est requis.' })
@@ -19,6 +18,6 @@ export class CreateUserDto {
   )
   email: string;
 
-  @IsArray({ message: 'Les rôles doivent être rôles valides.' })
-  roles: Role[];
+  @IsArray({ message: 'Les rôles doivent être des rôles valides.' })
+  roles: any[];
 }

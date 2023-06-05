@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model faculty {
+  id     Int     @id @default(autoincrement())
+  name   String
+  fields field[]
+
+  @@map("faculties")
+}
+
+model field {
+  id         Int       @id @default(autoincrement())
+  name       String
+  is_active  Boolean   @default(true)
+  faculty    faculty   @relation(fields: [faculty_id], references: [id])
+  faculty_id Int
+  courses    course[]
+  students   student[]
+
+  @@map("fields")
+}
+
+model user {
+  id        Int     @id @default(autoincrement())
+  name      String
+  email     String  @unique
+  password  String
+  is_active Boolean @default(true)
+  role      role[]
+
+  @@map("users")
+}
+
+model role {
+  id    Int    @id @default(autoincrement())
+  name  String
+  users user[]
+
+  @@map("roles")
+}
+
+model course {
+  id       Int       @id @default(autoincrement())
+  name     String
+  hours    Int
+  credits  Int
+  field    field     @relation(fields: [field_id], references: [id])
+  field_id Int
+  grade    grade[]
+  students student[]
+
+  @@map("courses")
+}
+
+model student {
+  id              Int      @id @default(autoincrement())
+  name            String
+  email           String   @unique
+  personal_number String   @unique
+  is_active       Boolean  @default(true)
+  promotion       Int
+  field           field    @relation(fields: [field_id], references: [id])
+  field_id        Int
+  grade           grade[]
+  courses         course[]
+
+  @@map("students")
+}
+
+model grade {
+  id                Int     @id @default(autoincrement())
+  average           Int
+  equalized_average Int
+  session           Int
+  student           student @relation(fields: [student_id], references: [id])
+  student_id        Int
+  course            course  @relation(fields: [course_id], references: [id])
+  course_id         Int
+
+  @@map("grades")
+}

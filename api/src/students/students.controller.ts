@@ -42,8 +42,8 @@ export class StudentsController {
     return this.studentsService.remove(+id);
   }
 
-  @Get('grades/:id')
-  getGrades(@Param('id') id: string) {
-    return this.studentsService.deliberate(+id);
-  }
+  // @Get('grades/:id')
+  // getGrades(@Param('id') id: string) {
+  //   return this.studentsService.deliberate(+id);
+  // }
 }
