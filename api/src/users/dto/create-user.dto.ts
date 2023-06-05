@@ -1,12 +1,6 @@
 import { IsArray, IsEmail, IsString } from 'class-validator';
 
 export class CreateUserDto {
-  @IsString({ message: 'Le prénom est requis.' })
-  firstname: string;
-
-  @IsString({ message: 'Le nom doit est requis.' })
-  lastname: string;
-
   @IsString({
     message: 'Le nom est requis.',
   })
@@ -19,5 +13,5 @@ export class CreateUserDto {
   email: string;
 
   @IsArray({ message: 'Les rôles doivent être des rôles valides.' })
-  roles: any[];
+  role: any[];
 }
