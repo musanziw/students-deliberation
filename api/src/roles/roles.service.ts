@@ -72,7 +72,7 @@ export class RolesService {
 
   async remove(id: number) {
     try {
-      this.prismaService.role.delete({
+      await this.prismaService.role.delete({
         where: { id },
       });
       return {
