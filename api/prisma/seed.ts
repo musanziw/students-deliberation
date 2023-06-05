@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 async function main() {
   const salt: string = await bcrypt.genSalt(10);
   const password: string = await bcrypt.hash('admin', salt);
-
   await prisma.user.create({
     data: {
       email: 'admin@admin.com',
@@ -14,6 +13,36 @@ async function main() {
       role: {
         create: {
           name: 'admin',
+        },
+      },
+    },
+  });
+
+  await prisma.faculty.create({
+    data: {
+      name: 'Faculté des Sciences',
+      fields: {
+        create: [
+          {
+            name: 'Génie Informatique',
+          },
+          {
+            name: 'Intelligence Artificielle',
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.student.create({
+    data: {
+      email: 'musanziwilfried@gmail.com',
+      name: 'Wilfried Musanzi',
+      personal_number: 'S20190001',
+      promotion: 1,
+      field: {
+        connect: {
+          id: 1,
         },
       },
     },
