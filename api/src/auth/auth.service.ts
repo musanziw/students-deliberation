@@ -43,21 +43,14 @@ export class AuthService {
 
   async updateProfile(@GetUser() user, updateProfileDto: UpdateProfileDto) {
     const { sub: id } = user;
-    try {
-      await this.prismaService.user.update({
-        where: { id },
-        data: updateProfileDto,
-      });
-      return {
-        status: HttpStatus.OK,
-        message: 'Le profil a été mis à jour avec succès',
-      };
-    } catch {
-      throw new HttpException(
-        'La mise à jour du profil a échoué',
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    await this.prismaService.user.update({
+      where: { id },
+      data: updateProfileDto,
+    });
+    return {
+      status: HttpStatus.OK,
+      message: 'Le profil a été mis à jour avec succès',
+    };
   }
 
   async updatePassword(@GetUser() user, updatePasswordDto: UpdatePasswordDto) {
@@ -74,20 +67,14 @@ export class AuthService {
       );
     const salt: string = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
-    try {
-      await this.prismaService.user.update({
-        where: { id },
-        data: { password: hashedPassword },
-      });
-      return {
-        status: HttpStatus.OK,
-        message: 'Le mot de passe a été mis à jour avec succès',
-      };
-    } catch {
-      throw new HttpException(
-        'La mise à jour du mot de passe a échoué',
-        HttpStatus.NOT_FOUND,
-      );
-    }
+
+    await this.prismaService.user.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
+    return {
+      status: HttpStatus.OK,
+      message: 'Le mot de passe a été mis à jour avec succès',
+    };
   }
 }
