@@ -22,8 +22,8 @@ export class UsersService {
         data: {
           ...createUserDto,
           password,
-          role: {
-            connect: createUserDto.role,
+          roles: {
+            connect: createUserDto.roles.map((role) => ({ id: role })),
           },
         },
       });
@@ -42,7 +42,7 @@ export class UsersService {
   async findAll() {
     const users = await this.prismaService.user.findMany({
       include: {
-        role: true,
+        roles: true,
       },
     });
     return {
@@ -55,7 +55,7 @@ export class UsersService {
     const user = await this.prismaService.user.findUnique({
       where: { id },
       include: {
-        role: true,
+        roles: true,
       },
     });
     return {
@@ -69,8 +69,8 @@ export class UsersService {
       where: { id },
       data: {
         ...updateUserDto,
-        role: {
-          set: updateUserDto.role,
+        roles: {
+          set: updateUserDto.roles.map((role) => ({ id: role })),
         },
       },
     });
