@@ -13,5 +13,5 @@ export class CreateUserDto {
   email: string;
 
   @IsArray({ message: 'Les rôles doivent être des rôles valides.' })
-  role: any[];
+  roles: number[];
 }
