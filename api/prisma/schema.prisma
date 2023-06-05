@@ -28,12 +28,13 @@ model field {
 }
 
 model user {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
-  email     String  @unique
+  email     String   @unique
   password  String
-  is_active Boolean @default(true)
+  is_active Boolean  @default(true)
   role      role[]
+  course    course[]
 
   @@map("users")
 }
@@ -47,14 +48,17 @@ model role {
 }
 
 model course {
-  id       Int       @id @default(autoincrement())
-  name     String
-  hours    Int
-  credits  Int
-  field    field     @relation(fields: [field_id], references: [id])
-  field_id Int
-  grade    grade[]
-  students student[]
+  id        Int       @id @default(autoincrement())
+  name      String
+  hours     Int
+  credits   Int
+  promotion Int
+  field     field     @relation(fields: [field_id], references: [id])
+  field_id  Int
+  grade     grade[]
+  students  student[]
+  teacher   user      @relation(fields: [user_id], references: [id])
+  user_id   Int
 
   @@map("courses")
 }
@@ -79,6 +83,7 @@ model grade {
   average           Int
   equalized_average Int
   session           Int
+  student_promotion Int
   student           student @relation(fields: [student_id], references: [id])
   student_id        Int
   course            course  @relation(fields: [course_id], references: [id])
