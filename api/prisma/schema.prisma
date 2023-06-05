@@ -33,8 +33,8 @@ model user {
   email     String   @unique
   password  String
   is_active Boolean  @default(true)
-  role      role[]
-  course    course[]
+  roles     role[]
+  courses   course[]
 
   @@map("users")
 }
@@ -53,9 +53,8 @@ model course {
   hours     Int
   credits   Int
   promotion Int
-  field     field     @relation(fields: [field_id], references: [id])
-  field_id  Int
-  grade     grade[]
+  fields    field[]
+  grades    grade[]
   students  student[]
   teacher   user      @relation(fields: [user_id], references: [id])
   user_id   Int
@@ -72,7 +71,7 @@ model student {
   promotion       Int
   field           field    @relation(fields: [field_id], references: [id])
   field_id        Int
-  grade           grade[]
+  grades          grade[]
   courses         course[]
 
   @@map("students")

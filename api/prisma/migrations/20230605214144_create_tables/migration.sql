@@ -3,6 +3,7 @@ CREATE TABLE `faculties` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
 
+    UNIQUE INDEX `faculties_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -33,6 +34,7 @@ CREATE TABLE `roles` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
 
+    UNIQUE INDEX `roles_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -42,7 +44,8 @@ CREATE TABLE `courses` (
     `name` VARCHAR(191) NOT NULL,
     `hours` INTEGER NOT NULL,
     `credits` INTEGER NOT NULL,
-    `field_id` INTEGER NOT NULL,
+    `promotion` INTEGER NOT NULL,
+    `user_id` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -54,6 +57,7 @@ CREATE TABLE `students` (
     `email` VARCHAR(191) NOT NULL,
     `personal_number` VARCHAR(191) NOT NULL,
     `is_active` BOOLEAN NOT NULL DEFAULT true,
+    `promotion` INTEGER NOT NULL,
     `field_id` INTEGER NOT NULL,
 
     UNIQUE INDEX `students_email_key`(`email`),
@@ -67,6 +71,7 @@ CREATE TABLE `grades` (
     `average` INTEGER NOT NULL,
     `equalized_average` INTEGER NOT NULL,
     `session` INTEGER NOT NULL,
+    `student_promotion` INTEGER NOT NULL,
     `student_id` INTEGER NOT NULL,
     `course_id` INTEGER NOT NULL,
 
@@ -83,6 +88,15 @@ CREATE TABLE `_roleTouser` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `_courseTofield` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
+
+    UNIQUE INDEX `_courseTofield_AB_unique`(`A`, `B`),
+    INDEX `_courseTofield_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `_courseTostudent` (
     `A` INTEGER NOT NULL,
     `B` INTEGER NOT NULL,
@@ -95,7 +109,7 @@ CREATE TABLE `_courseTostudent` (
 ALTER TABLE `fields` ADD CONSTRAINT `fields_faculty_id_fkey` FOREIGN KEY (`faculty_id`) REFERENCES `faculties`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `courses` ADD CONSTRAINT `courses_field_id_fkey` FOREIGN KEY (`field_id`) REFERENCES `fields`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `courses` ADD CONSTRAINT `courses_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `students` ADD CONSTRAINT `students_field_id_fkey` FOREIGN KEY (`field_id`) REFERENCES `fields`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -111,6 +125,12 @@ ALTER TABLE `_roleTouser` ADD CONSTRAINT `_roleTouser_A_fkey` FOREIGN KEY (`A`) 
 
 -- AddForeignKey
 ALTER TABLE `_roleTouser` ADD CONSTRAINT `_roleTouser_B_fkey` FOREIGN KEY (`B`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_courseTofield` ADD CONSTRAINT `_courseTofield_A_fkey` FOREIGN KEY (`A`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_courseTofield` ADD CONSTRAINT `_courseTofield_B_fkey` FOREIGN KEY (`B`) REFERENCES `fields`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_courseTostudent` ADD CONSTRAINT `_courseTostudent_A_fkey` FOREIGN KEY (`A`) REFERENCES `courses`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

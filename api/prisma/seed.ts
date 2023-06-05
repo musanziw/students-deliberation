@@ -10,7 +10,7 @@ async function main() {
       name: 'admin',
       password,
       is_active: true,
-      role: {
+      roles: {
         create: {
           name: 'admin',
         },
