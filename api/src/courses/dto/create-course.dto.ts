@@ -1,18 +1,21 @@
-import { IsNumber, IsObject, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsObject, IsString } from 'class-validator';
 
 export class CreateCourseDto {
-  @IsString({ message: 'Le nom du cours est requis.' })
+  @IsString({ message: 'Le nom du cours est requis' })
   name: string;
 
-  @IsNumber({}, { message: "Le nombre d'heures est requis." })
+  @IsNumber({}, { message: "Le nombre d'heures est requis" })
   hours: number;
 
-  @IsNumber({}, { message: 'Le nombre de crédits est requis.' })
-  credit: number;
+  @IsNumber({}, { message: 'Le nombre de crédits est requis' })
+  credits: number;
 
-  @IsObject({ message: 'Le professeur est requis.' })
-  user: { id: number };
+  @IsNumber({}, { message: 'La promotion est requise' })
+  promotion: number;
 
-  @IsObject({ message: 'La promotion est requise.' })
-  promotion: { id: number };
+  @IsNumber({}, { message: 'Le professeur est requis' })
+  teacher: number;
+
+  @IsArray({ message: 'Les filières sont requises' })
+  fields: number[];
 }
