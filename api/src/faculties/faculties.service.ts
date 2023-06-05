@@ -41,7 +41,7 @@ export class FacultiesService {
 
   async findOne(id: number) {
     try {
-      const faculty = await this.prismaService.faculty.findUnique({
+      const faculty = await this.prismaService.faculty.findUniqueOrThrow({
         where: { id },
       });
       return {
