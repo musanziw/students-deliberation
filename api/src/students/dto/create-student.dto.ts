@@ -17,5 +17,5 @@ export class CreateStudentDto {
   field: number;
 
   @IsOptional()
-  course: any[];
+  courses: number[];
 }
