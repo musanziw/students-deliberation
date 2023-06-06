@@ -16,6 +16,9 @@ export class StudentsService {
               id: createStudentDto.field,
             },
           },
+          courses: {
+            connect: createStudentDto.courses.map((course) => ({ id: course })),
+          },
         },
       });
       return {
@@ -67,6 +70,9 @@ export class StudentsService {
               id: updateStudentDto.field,
             },
           },
+          courses: {
+            connect: updateStudentDto.courses.map((course) => ({ id: course })),
+          },
         },
       });
       return {
@@ -91,56 +97,48 @@ export class StudentsService {
     };
   }
 
-  // calculatePercentage(grades: Grade[]) {
-  //   const sum = grades.reduce(
-  //     (acc, grade) => acc + (grade.average / 20) * grade.course.credit,
-  //     0,
-  //   );
-  //   const creditAttempt = grades.reduce(
-  //     (acc, grade) => acc + grade.course.credit,
-  //     0,
-  //   );
-  //   return (sum / creditAttempt) * 100;
-  // }
-  //
-  // getLevels(grades: Grade[]) {
-  //   return [...new Set(grades.map((grade) => grade.student_level))];
-  // }
-  //
-  // async getGrades(id: number) {
-  //   const grades = await this.dataSource.manager
-  //     .createQueryBuilder(Grade, 'grade')
-  //     .leftJoinAndSelect('grade.course', 'course')
-  //     .leftJoinAndSelect('grade.session', 'session')
-  //     .where('studentId = :id', { id })
-  //     .getMany();
-  //
-  //   const levels: number[] = this.getLevels(grades);
-  //
-  //   return levels.map((level) =>
-  //     grades.filter((grade) => {
-  //       return grade.student_level === level;
-  //     }),
-  //   );
-  // }
-  //
-  // deliberated(grades: Grade[]) {
-  //   const percentage = this.calculatePercentage(grades);
-  //   return {
-  //     percentage,
-  //     level: grades[0].student_level,
-  //     grades,
-  //   };
-  // }
-  //
-  // async deliberate(id: number) {
-  //   const gradesByLevel = await this.getGrades(id);
-  //   const deliberatedGrades = gradesByLevel.map((grades) =>
-  //     this.deliberated(grades),
-  //   );
-  //   return {
-  //     status: HttpStatus.OK,
-  //     deliberatedGrades,
-  //   };
-  // }
+  async sudentsByPromotion(field: number, promotion: number) {
+    const students = await this.prismaService.student.findMany({
+      where: {
+        promotion: promotion,
+        field: {
+          id: field,
+        },
+      },
+      include: {
+        field: true,
+      },
+    });
+    return {
+      status: HttpStatus.OK,
+      students,
+    };
+  }
+
+  async findStudentWithCourses(courseId: number) {
+    const student = await this.prismaService.student.findMany({
+      orderBy: {
+        name: 'asc',
+      },
+      include: {
+        courses: true,
+      },
+    });
+    const studentWithCourses = student.filter((student) =>
+      student.courses.some((course) => course.id === courseId),
+    );
+    const students = studentWithCourses.map((student) => {
+      const courses = student.courses.filter(
+        (course) => course.id === courseId,
+      );
+      return {
+        ...student,
+        courses,
+      };
+    });
+    return {
+      status: HttpStatus.OK,
+      students,
+    };
+  }
 }
