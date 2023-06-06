@@ -17,7 +17,7 @@ model faculty {
 
 model field {
   id         Int       @id @default(autoincrement())
-  name       String
+  name       String    @unique
   is_active  Boolean   @default(true)
   faculty    faculty   @relation(fields: [faculty_id], references: [id])
   faculty_id Int
@@ -80,7 +80,7 @@ model student {
 model grade {
   id                Int     @id @default(autoincrement())
   average           Int
-  equalized_average Int
+  equalized_average Int     @default(0)
   session           Int
   student_promotion Int
   student           student @relation(fields: [student_id], references: [id])
