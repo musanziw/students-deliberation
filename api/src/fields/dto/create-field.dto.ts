@@ -1,4 +1,4 @@
-import { IsNumber, IsObject, IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class CreateFieldDto {
   @IsString({ message: 'Le nom est requis.' })
