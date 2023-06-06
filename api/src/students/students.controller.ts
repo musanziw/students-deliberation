@@ -42,8 +42,16 @@ export class StudentsController {
     return this.studentsService.remove(+id);
   }
 
-  // @Get('grades/:id')
-  // getGrades(@Param('id') id: string) {
-  //   return this.studentsService.deliberate(+id);
-  // }
+  @Get('fields/:field/promotions/:promotion')
+  getStudentByPromotion(
+    @Param('field') field: string,
+    @Param('promotion') promotion: string,
+  ) {
+    return this.studentsService.sudentsByPromotion(+field, +promotion);
+  }
+
+  @Get('courses/:id')
+  getCourses(@Param('id') id: string) {
+    return this.studentsService.findStudentWithCourses(+id);
+  }
 }
