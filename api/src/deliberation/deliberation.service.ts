@@ -3,6 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class DeliberationService {
+  SPECIAL_PROMOTIONS: number[] = [2, 4];
+
   constructor(private prismaService: PrismaService) {}
 
   reportDetails(grades: any[]) {
@@ -25,7 +27,12 @@ export class DeliberationService {
           grade.course.credits,
       0,
     );
-    return { earnedCredits, attemptedCredits, sum };
+
+    const failedCourses = grades
+      .filter((grade) => grade.average < 10 && !grade.equalized_average)
+      .map((grade) => grade.course);
+
+    return { earnedCredits, attemptedCredits, sum, failedCourses };
   }
 
   getLevels(grades: any[]) {
@@ -41,16 +48,6 @@ export class DeliberationService {
       );
       return Math.max(...someGrgrades.map((g) => g.session)) === grade.session;
     });
-  }
-
-  failedGrades(grades: any[]) {
-    const failedGrades = grades.filter(
-      (grade) => grade.average < 10 && !grade.equalized_average,
-    );
-    return {
-      failedGrades: failedGrades.length,
-      courses: failedGrades.map((grade) => grade.course),
-    };
   }
 
   async succeeded(student: any, studentLevel: number) {
@@ -89,36 +86,7 @@ export class DeliberationService {
     });
   }
 
-  mention(
-    earnedCredits: number,
-    attemptedCredits: number,
-    sum: number,
-    failedGrades: number,
-    studentLevel?: number,
-  ): string {
-    const average = sum / attemptedCredits;
-    if (earnedCredits === attemptedCredits) {
-      if (average >= 16) return 'PGD';
-      if (average >= 14) return 'PD';
-      if (average >= 10) return 'PS';
-    }
-    if (
-      earnedCredits >= 45 &&
-      failedGrades <= 3 &&
-      studentLevel !== 2 &&
-      studentLevel !== 3
-    ) {
-      return `PC${failedGrades}`;
-    }
-    return `R${failedGrades}`;
-  }
-
-  async decision(
-    earnedCredits: number,
-    attemptedCredits: number,
-    studentId: number,
-    courses: any[],
-  ) {
+  async decision(studentId: number, grades: any[], courses: any[]) {
     const student = await this.prismaService.student.findUnique({
       where: { id: studentId },
       include: {
@@ -126,18 +94,24 @@ export class DeliberationService {
       },
     });
     const studentLevel = Math.max(...this.getLevels(student.grades));
+    const { attemptedCredits, earnedCredits, sum } = this.reportDetails(grades);
+    const average = sum / attemptedCredits;
     if (earnedCredits === attemptedCredits) {
-      return await this.succeeded(student, studentLevel);
+      await this.succeeded(student, studentLevel);
+      if (average >= 16) return 'PGD';
+      if (average >= 14) return 'PD';
+      if (average >= 10) return 'PS';
     }
     if (
       earnedCredits >= 45 &&
       courses.length <= 3 &&
-      studentLevel !== 2 &&
-      studentLevel !== 3
+      !this.SPECIAL_PROMOTIONS.includes(studentLevel)
     ) {
-      return await this.succeededWith(student, courses);
+      await this.succeededWith(student, courses);
+      return `PC${courses.length}`;
     }
-    return await this.failed(student, courses);
+    await this.failed(student, courses);
+    return `R${courses.length}`;
   }
 
   async getGrades(id: number) {
@@ -159,17 +133,8 @@ export class DeliberationService {
   }
 
   async deliberation(studentId: number, grades: any[]) {
-    const { attemptedCredits, earnedCredits, sum } = this.reportDetails(grades);
-    const { failedGrades, courses } = this.failedGrades(grades);
-    const studentLevel = Math.max(...this.getLevels(grades));
-    const mention = this.mention(
-      earnedCredits,
-      attemptedCredits,
-      sum,
-      failedGrades,
-      studentLevel,
-    );
-    await this.decision(earnedCredits, attemptedCredits, studentId, courses);
+    const { attemptedCredits, sum, failedCourses } = this.reportDetails(grades);
+    const mention = await this.decision(studentId, grades, failedCourses);
     return {
       percentage: ((sum / attemptedCredits) * 100) / 20,
       mention,
