@@ -7,6 +7,6 @@ export class DeliberationController {
 
   @Get(':id')
   async deliberate(@Param('id') id: number) {
-    return this.deliberationService.deliberate(+id);
+    return this.deliberationService.report(+id);
   }
 }
