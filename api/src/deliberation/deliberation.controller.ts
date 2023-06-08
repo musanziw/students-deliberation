@@ -1,7 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { DeliberationService } from './deliberation.service';
+import { AuthGuard } from '../auth/guard';
 
 @Controller('deliberation')
+@UseGuards(AuthGuard)
 export class DeliberationController {
   constructor(private readonly deliberationService: DeliberationService) {}
 
