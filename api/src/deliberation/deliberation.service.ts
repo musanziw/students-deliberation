@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class DeliberationService {
-  SPECIAL_PROMOTIONS: number[] = [2, 4];
+  TERMINALS: number[] = [2, 4];
 
   constructor(private prismaService: PrismaService) {}
 
@@ -102,14 +102,19 @@ export class DeliberationService {
       if (average >= 14) return 'PD';
       if (average >= 10) return 'PS';
     }
-    if (
-      earnedCredits >= 45 &&
-      courses.length <= 3 &&
-      !this.SPECIAL_PROMOTIONS.includes(studentLevel)
-    ) {
-      await this.succeededWith(student, courses);
-      return `PC${courses.length}`;
+
+    if (earnedCredits >= 45) {
+      if (courses.length <= 3 && !this.TERMINALS.includes(studentLevel)) {
+        await this.succeededWith(student, courses);
+        return `PC${courses.length}`;
+      }
+
+      if (this.TERMINALS.includes(studentLevel) && courses.length <= 1) {
+        await this.succeededWith(student, courses);
+        return `PC${courses.length}`;
+      }
     }
+
     await this.failed(student, courses);
     return `R${courses.length}`;
   }
@@ -133,9 +138,12 @@ export class DeliberationService {
   }
 
   async deliberation(studentId: number, grades: any[]) {
-    const { attemptedCredits, sum, failedCourses } = this.reportDetails(grades);
+    const { attemptedCredits, sum, failedCourses, earnedCredits } =
+      this.reportDetails(grades);
     const mention = await this.decision(studentId, grades, failedCourses);
     return {
+      attemptedCredits,
+      earnedCredits,
       percentage: ((sum / attemptedCredits) * 100) / 20,
       mention,
       level: grades[0].student_promotion,
