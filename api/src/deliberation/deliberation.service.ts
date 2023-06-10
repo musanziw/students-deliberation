@@ -3,16 +3,15 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class DeliberationService {
-  TERMINALS: number[] = [2, 4];
+  private TERMINALS: number[] = [2, 4];
 
   constructor(private prismaService: PrismaService) {}
 
-  reportDetails(grades: any[]) {
-    const attemptedCredits = grades.reduce(
-      (acc, grade) => acc + grade.course.credits,
-      0,
-    );
-    const earnedCredits = grades.reduce(
+  getAverageGrade = (sum: number, attemptedCredits: number) =>
+    sum / attemptedCredits;
+
+  getEarnedCredits(grades: any[]) {
+    return grades.reduce(
       (acc, grade) =>
         acc +
         (grade.equalized_average || grade.average >= 10
@@ -20,37 +19,44 @@ export class DeliberationService {
           : 0),
       0,
     );
-    const sum = grades.reduce(
+  }
+
+  getAttemptedCredits(grades: any[]) {
+    return grades.reduce((acc, grade) => acc + grade.course.credits, 0);
+  }
+
+  getTotalGrades(grades: any[]) {
+    return grades.reduce(
       (acc, grade) =>
         acc +
         (grade.equalized_average ? grade.equalized_average : grade.average) *
           grade.course.credits,
       0,
     );
-
-    const failedCourses = grades
-      .filter((grade) => grade.average < 10 && !grade.equalized_average)
-      .map((grade) => grade.course);
-
-    return { earnedCredits, attemptedCredits, sum, failedCourses };
   }
 
-  getLevels(grades: any[]) {
+  getFailedCourses(grades: any[]) {
+    return grades
+      .filter((grade) => grade.average < 10 && !grade.equalized_average)
+      .map((grade) => grade.course);
+  }
+
+  getStudentLevels(grades: any[]) {
     return [...new Set(grades.map((grade) => grade.student_promotion))];
   }
 
   filterGrades(grades: any[]) {
     return grades.filter((grade) => {
-      const someGrgrades = grades.filter(
+      const sameGrades = grades.filter(
         (g) =>
           g.course.id === grade.course.id &&
           g.student_promotion === grade.student_promotion,
       );
-      return Math.max(...someGrgrades.map((g) => g.session)) === grade.session;
+      return Math.max(...sameGrades.map((g) => g.session)) === grade.session;
     });
   }
 
-  async succeeded(student: any, studentLevel: number) {
+  async markAsSucceded(student: any, studentLevel: number) {
     await this.prismaService.student.update({
       where: { id: student.id },
       data: {
@@ -62,8 +68,8 @@ export class DeliberationService {
     });
   }
 
-  async succeededWith(student: any, courses: any[]) {
-    const studentLevel = Math.max(...this.getLevels(student.grades));
+  async markAsSuccededWith(student: any, courses: any[]) {
+    const studentLevel = Math.max(...this.getStudentLevels(student.grades));
     await this.prismaService.student.update({
       where: { id: student.id },
       data: {
@@ -75,7 +81,7 @@ export class DeliberationService {
     });
   }
 
-  async failed(student: any, courses: any[]) {
+  async markAsFailed(student: any, courses: any[]) {
     await this.prismaService.student.update({
       where: { id: student.id },
       data: {
@@ -86,18 +92,29 @@ export class DeliberationService {
     });
   }
 
-  async decision(studentId: number, grades: any[], courses: any[]) {
-    const student = await this.prismaService.student.findUnique({
+  getStudent(studentId: number) {
+    return this.prismaService.student.findUnique({
       where: { id: studentId },
       include: {
-        grades: true,
+        grades: {
+          include: {
+            course: true,
+          },
+        },
       },
     });
-    const studentLevel = Math.max(...this.getLevels(student.grades));
-    const { attemptedCredits, earnedCredits, sum } = this.reportDetails(grades);
-    const average = sum / attemptedCredits;
+  }
+
+  async mention(studentId: number, grades: any[], courses: any[]) {
+    const student = await this.getStudent(studentId);
+    const studentLevel = Math.max(...this.getStudentLevels(student.grades));
+    const attemptedCredits = this.getAttemptedCredits(grades);
+    const earnedCredits = this.getEarnedCredits(grades);
+    const sum = this.getTotalGrades(grades);
+    const average = this.getAverageGrade(sum, attemptedCredits);
+
     if (earnedCredits === attemptedCredits) {
-      await this.succeeded(student, studentLevel);
+      await this.markAsSucceded(student, studentLevel);
       if (average >= 16) return 'PGD';
       if (average >= 14) return 'PD';
       if (average >= 10) return 'PS';
@@ -105,17 +122,17 @@ export class DeliberationService {
 
     if (earnedCredits >= 45) {
       if (courses.length <= 3 && !this.TERMINALS.includes(studentLevel)) {
-        await this.succeededWith(student, courses);
+        await this.markAsSuccededWith(student, courses);
         return `PC${courses.length}`;
       }
 
       if (this.TERMINALS.includes(studentLevel) && courses.length <= 1) {
-        await this.succeededWith(student, courses);
+        await this.markAsSuccededWith(student, courses);
         return `PC${courses.length}`;
       }
     }
 
-    await this.failed(student, courses);
+    await this.markAsFailed(student, courses);
     return `R${courses.length}`;
   }
 
@@ -128,7 +145,7 @@ export class DeliberationService {
         course: true,
       },
     });
-    const levels: number[] = this.getLevels(grades);
+    const levels: number[] = this.getStudentLevels(grades);
     const filteredGrades = this.filterGrades(grades);
     return levels.map((level) =>
       filteredGrades.filter((grade) => {
@@ -137,10 +154,12 @@ export class DeliberationService {
     );
   }
 
-  async deliberation(studentId: number, grades: any[]) {
-    const { attemptedCredits, sum, failedCourses, earnedCredits } =
-      this.reportDetails(grades);
-    const mention = await this.decision(studentId, grades, failedCourses);
+  async getStudentReport(studentId: number, grades: any[]) {
+    const attemptedCredits = this.getAttemptedCredits(grades);
+    const earnedCredits = this.getEarnedCredits(grades);
+    const sum = this.getTotalGrades(grades);
+    const failedCourses = this.getFailedCourses(grades);
+    const mention = await this.mention(studentId, grades, failedCourses);
     return {
       attemptedCredits,
       earnedCredits,
@@ -151,10 +170,10 @@ export class DeliberationService {
     };
   }
 
-  async report(id: number) {
+  async getDeliberatedGrades(id: number) {
     const gradesByLevel = await this.getGrades(id);
     const deliberatedGrades = gradesByLevel.map((grades) =>
-      this.deliberation(id, grades),
+      this.getStudentReport(id, grades),
     );
     return {
       status: HttpStatus.OK,
