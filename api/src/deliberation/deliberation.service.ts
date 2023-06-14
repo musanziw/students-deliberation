@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PdfService } from '../pdf/pdf.service';
 import { StudentReportType } from './types';
 import { course, grade } from '@prisma/client';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class DeliberationService {
@@ -11,6 +12,7 @@ export class DeliberationService {
   constructor(
     private prismaService: PrismaService,
     private pdfService: PdfService,
+    private mailerService: MailerService,
   ) {}
 
   getAverageGrade = (sum: number, attemptedCredits: number) =>
@@ -165,7 +167,7 @@ export class DeliberationService {
     );
   }
 
-  async cratePdfReport(data: any) {
+  async createPdfReport(data: any) {
     return await this.pdfService.createPDF(data);
   }
 
@@ -202,7 +204,8 @@ export class DeliberationService {
       totalHours,
       failures: failedCourses.length,
     };
-    await this.cratePdfReport(studentReport);
+    await this.createPdfReport(studentReport);
+
     return {
       attemptedCredits,
       earnedCredits,
@@ -223,5 +226,21 @@ export class DeliberationService {
       status: HttpStatus.OK,
       grades: await Promise.all(deliberatedGrades),
     };
+  }
+
+  async sendReportToStudent(id: number, level: number) {
+    const student = await this.getStudent(id);
+    await this.mailerService.sendMail({
+      to: student.email,
+      subject: 'Rapport de notes',
+      attachments: [
+        {
+          filename: `${student.name}-${student.field.name}-${level}.pdf`,
+          path: `src/pdf/documents/${student.name}-${student.field.name}-${level}.pdf`,
+          content: 'Bienvenue sur notre plateforme de gestion des notes',
+          contentType: 'application/pdf',
+        },
+      ],
+    });
   }
 }
