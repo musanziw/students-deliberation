@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { DeliberationModule } from './deliberation/deliberation.module';
+import { PdfModule } from './pdf/pdf.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DeliberationModule } from './deliberation/deliberation.module';
       isGlobal: true,
     }),
     DeliberationModule,
+    PdfModule,
   ],
 })
 export class AppModule {}
