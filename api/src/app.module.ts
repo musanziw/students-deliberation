@@ -7,10 +7,11 @@ import { StudentsModule } from './students/students.module';
 import { CoursesModule } from './courses/courses.module';
 import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { DeliberationModule } from './deliberation/deliberation.module';
 import { PdfModule } from './pdf/pdf.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -28,6 +29,25 @@ import { PdfModule } from './pdf/pdf.module';
     }),
     DeliberationModule,
     PdfModule,
+    MailerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        return {
+          transport: {
+            host: config.get('MAIL_HOST'),
+            port: config.get('MAIL_PORT'),
+            secure: false,
+            auth: {
+              user: config.get('MAIL_USER'),
+              pass: config.get('MAIL_PASSWORD'),
+            },
+          },
+          defaults: {
+            from: config.get('MAIL_FROM'),
+          },
+        };
+      },
+    }),
   ],
 })
 export class AppModule {}
