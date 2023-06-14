@@ -1,11 +1,17 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PdfService } from '../pdf/pdf.service';
+import { StudentReportType } from './types';
+import { course, grade } from '@prisma/client';
 
 @Injectable()
 export class DeliberationService {
   private TERMINALS: number[] = [2, 4];
 
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private pdfService: PdfService,
+  ) {}
 
   getAverageGrade = (sum: number, attemptedCredits: number) =>
     sum / attemptedCredits;
@@ -81,7 +87,7 @@ export class DeliberationService {
     });
   }
 
-  async markAsFailed(student: any, courses: any[]) {
+  async markAsFailed(student: any, courses: course[]) {
     await this.prismaService.student.update({
       where: { id: student.id },
       data: {
@@ -90,6 +96,10 @@ export class DeliberationService {
         },
       },
     });
+  }
+
+  getTotalHours(grades: any[]) {
+    return grades.reduce((acc, grade) => acc + grade.course.hours, 0);
   }
 
   getStudent(studentId: number) {
@@ -101,11 +111,12 @@ export class DeliberationService {
             course: true,
           },
         },
+        field: true,
       },
     });
   }
 
-  async mention(studentId: number, grades: any[], courses: any[]) {
+  async mention(studentId: number, grades: grade[], courses: course[]) {
     const student = await this.getStudent(studentId);
     const studentLevel = Math.max(...this.getStudentLevels(student.grades));
     const attemptedCredits = this.getAttemptedCredits(grades);
@@ -154,18 +165,51 @@ export class DeliberationService {
     );
   }
 
+  async cratePdfReport(data: any) {
+    return await this.pdfService.createPDF(data);
+  }
+
   async getStudentReport(studentId: number, grades: any[]) {
-    const attemptedCredits = this.getAttemptedCredits(grades);
-    const earnedCredits = this.getEarnedCredits(grades);
-    const sum = this.getTotalGrades(grades);
-    const failedCourses = this.getFailedCourses(grades);
-    const mention = await this.mention(studentId, grades, failedCourses);
+    const attemptedCredits: number = this.getAttemptedCredits(grades);
+    const earnedCredits: number = this.getEarnedCredits(grades);
+    const sum: number = this.getTotalGrades(grades);
+    const failedCourses: any[] = this.getFailedCourses(grades);
+    const totalHours: number = this.getTotalHours(grades);
+    const mention: string = await this.mention(
+      studentId,
+      grades,
+      failedCourses,
+    );
+
+    const student: any = await this.getStudent(studentId);
+
+    const studentReport: StudentReportType = {
+      name: student.name,
+      matricule: student.personal_number,
+      promotion: student.promotion,
+      field: student.field.name,
+      courses: grades.map((grade) => ({
+        name: grade.course.name,
+        grade: grade.equalized_average
+          ? grade.equalized_average
+          : grade.average,
+        credits: grade.course.credits,
+      })),
+      percentage: ((sum / attemptedCredits) * 100) / 20,
+      mention,
+      earnedCredits,
+      attemptedCredits,
+      totalHours,
+      failures: failedCourses.length,
+    };
+    await this.cratePdfReport(studentReport);
     return {
       attemptedCredits,
       earnedCredits,
+      totalHours,
       percentage: ((sum / attemptedCredits) * 100) / 20,
       mention,
-      level: grades[0].student_promotion,
+      promotion: grades[0].student_promotion,
       grades,
     };
   }
