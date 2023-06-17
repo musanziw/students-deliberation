@@ -232,12 +232,11 @@ export class DeliberationService {
     const student = await this.getStudent(id);
     await this.mailerService.sendMail({
       to: student.email,
-      subject: 'Rapport de notes',
+      subject: `Rapport de notes ${level} ${level == 1 ? 'ère' : 'ème'} année`,
       attachments: [
         {
           filename: `${student.name}-${student.field.name}-${level}.pdf`,
           path: `src/pdf/documents/${student.name}-${student.field.name}-${level}.pdf`,
-          content: 'Bienvenue sur notre plateforme de gestion des notes',
           contentType: 'application/pdf',
         },
       ],
