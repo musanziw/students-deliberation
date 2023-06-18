@@ -25,7 +25,7 @@ export class PdfService {
       align: 'center',
     });
 
-    doc.text(`Promotion: ${data.promotion}`, {
+    doc.text(`Promotion: ${data.courses[0].promotion}`, {
       font: 'Helvetica',
       size: 16,
       align: 'center',
@@ -79,12 +79,13 @@ export class PdfService {
       font: 'Helvetica',
       size: 16,
       align: 'center',
+      marginTop: '4cm',
     });
 
     doc.end();
     doc.pipe(
       fs.createWriteStream(
-        `src/pdf/documents/${data.name}-${data.field}-${data.promotion}.pdf`,
+        `src/reports/${data.name}-${data.courses[0].promotion}-${data.courses[0].session}.pdf`,
       ),
     );
   }
