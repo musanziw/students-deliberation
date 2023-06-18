@@ -12,8 +12,13 @@ export class DeliberationController {
     return this.deliberationService.getDeliberatedGrades(+id);
   }
 
-  @Get('send/report/:id-:level')
-  async sendReport(@Param('id') id: number, @Param('level') level: number) {
-    return this.deliberationService.sendReportToStudent(+id, +level);
+  @Get('send/report/:id')
+  async sendReport(@Param('id') id: number) {
+    return this.deliberationService.sendReportToStudent(+id);
+  }
+
+  @Get('generate-reports/:id')
+  async generateStudentReports(@Param('id') id: number) {
+    return this.deliberationService.generatePdfReports(+id);
   }
 }
