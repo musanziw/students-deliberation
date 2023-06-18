@@ -1,9 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PdfService } from '../pdf/pdf.service';
-import { StudentReportType } from './types';
 import { course, grade } from '@prisma/client';
 import { MailerService } from '@nestjs-modules/mailer';
+import { StudentReportType } from './types';
 
 @Injectable()
 export class DeliberationService {
@@ -167,11 +167,8 @@ export class DeliberationService {
     );
   }
 
-  async createPdfReport(data: any) {
-    return await this.pdfService.createPDF(data);
-  }
-
   async getStudentReport(studentId: number, grades: any[]) {
+    const student: any = await this.getStudent(studentId);
     const attemptedCredits: number = this.getAttemptedCredits(grades);
     const earnedCredits: number = this.getEarnedCredits(grades);
     const sum: number = this.getTotalGrades(grades);
@@ -183,15 +180,15 @@ export class DeliberationService {
       failedCourses,
     );
 
-    const student: any = await this.getStudent(studentId);
-
-    const studentReport: StudentReportType = {
+    const report: StudentReportType = {
       name: student.name,
       matricule: student.personal_number,
-      promotion: student.promotion,
       field: student.field.name,
+      email: student.email,
       courses: grades.map((grade) => ({
         name: grade.course.name,
+        session: grade.session,
+        promotion: grade.student_promotion,
         grade: grade.equalized_average
           ? grade.equalized_average
           : grade.average,
@@ -204,42 +201,59 @@ export class DeliberationService {
       totalHours,
       failures: failedCourses.length,
     };
-    await this.createPdfReport(studentReport);
+    return report;
+  }
 
+  async sendReportToStudent(id: number) {
+    await this.gradesManupilations(id, async (report: StudentReportType) => {
+      await this.mailerService.sendMail({
+        to: report.email,
+        subject: `Rapport de notes ${report.courses[0].promotion} ${
+          report.courses[0].promotion == 1 ? ' ère' : ' ème'
+        } année`,
+        attachments: [
+          {
+            filename: `${report.name}-${report.courses[0].promotion}-${report.courses[0].session}.pdf`,
+            path: `src/reports/${report.name}-${report.courses[0].promotion}-${report.courses[0].session}.pdf`,
+            contentType: 'application/pdf',
+          },
+        ],
+      });
+    });
     return {
-      attemptedCredits,
-      earnedCredits,
-      totalHours,
-      percentage: ((sum / attemptedCredits) * 100) / 20,
-      mention,
-      promotion: grades[0].student_promotion,
-      grades,
+      status: HttpStatus.OK,
+      message: 'Les relevés ont été envoyés avec succès',
     };
   }
 
-  async getDeliberatedGrades(id: number) {
-    const gradesByLevel = await this.getGrades(id);
-    const deliberatedGrades = gradesByLevel.map((grades) =>
-      this.getStudentReport(id, grades),
+  async getDeliberatedGrades(studentId: number) {
+    const reports = await this.gradesManupilations(
+      studentId,
+      (report: StudentReportType) => report,
     );
     return {
       status: HttpStatus.OK,
-      grades: await Promise.all(deliberatedGrades),
+      reports,
     };
   }
 
-  async sendReportToStudent(id: number, level: number) {
-    const student = await this.getStudent(id);
-    await this.mailerService.sendMail({
-      to: student.email,
-      subject: `Rapport de notes ${level} ${level == 1 ? 'ère' : 'ème'} année`,
-      attachments: [
-        {
-          filename: `${student.name}-${student.field.name}-${level}.pdf`,
-          path: `src/pdf/documents/${student.name}-${student.field.name}-${level}.pdf`,
-          contentType: 'application/pdf',
-        },
-      ],
+  async generatePdfReports(studentId: number) {
+    await this.gradesManupilations(studentId, this.pdfService.createPDF);
+    return {
+      status: HttpStatus.OK,
+      message: 'Les relevés ont generés avec succès',
+    };
+  }
+
+  async gradesManupilations(
+    studentId: number,
+    manupilate: (report: StudentReportType) => any,
+  ) {
+    const gradesByLevel = await this.getGrades(studentId);
+    const deliberatedGrades = gradesByLevel.map(async (grades) => {
+      const report = await this.getStudentReport(studentId, grades);
+      return await manupilate(report);
     });
+    return await Promise.all(deliberatedGrades);
   }
 }
