@@ -1,8 +1,8 @@
 export interface StudentReportType {
   name: string;
   matricule: string;
-  promotion: number;
   field: string;
+  email: string;
   courses: any[];
   percentage: number;
   mention: string;
