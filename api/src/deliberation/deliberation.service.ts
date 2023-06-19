@@ -1,11 +1,19 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PdfService } from '../pdf/pdf.service';
+import { course, grade } from '@prisma/client';
+import { MailerService } from '@nestjs-modules/mailer';
+import { StudentReportType } from './types';
 
 @Injectable()
 export class DeliberationService {
   private TERMINALS: number[] = [2, 4];
 
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private pdfService: PdfService,
+    private mailerService: MailerService,
+  ) {}
 
   getAverageGrade = (sum: number, attemptedCredits: number) =>
     sum / attemptedCredits;
@@ -81,7 +89,7 @@ export class DeliberationService {
     });
   }
 
-  async markAsFailed(student: any, courses: any[]) {
+  async markAsFailed(student: any, courses: course[]) {
     await this.prismaService.student.update({
       where: { id: student.id },
       data: {
@@ -90,6 +98,10 @@ export class DeliberationService {
         },
       },
     });
+  }
+
+  getTotalHours(grades: any[]) {
+    return grades.reduce((acc, grade) => acc + grade.course.hours, 0);
   }
 
   getStudent(studentId: number) {
@@ -101,11 +113,12 @@ export class DeliberationService {
             course: true,
           },
         },
+        field: true,
       },
     });
   }
 
-  async mention(studentId: number, grades: any[], courses: any[]) {
+  async mention(studentId: number, grades: grade[], courses: course[]) {
     const student = await this.getStudent(studentId);
     const studentLevel = Math.max(...this.getStudentLevels(student.grades));
     const attemptedCredits = this.getAttemptedCredits(grades);
@@ -155,29 +168,92 @@ export class DeliberationService {
   }
 
   async getStudentReport(studentId: number, grades: any[]) {
-    const attemptedCredits = this.getAttemptedCredits(grades);
-    const earnedCredits = this.getEarnedCredits(grades);
-    const sum = this.getTotalGrades(grades);
-    const failedCourses = this.getFailedCourses(grades);
-    const mention = await this.mention(studentId, grades, failedCourses);
-    return {
-      attemptedCredits,
-      earnedCredits,
+    const student: any = await this.getStudent(studentId);
+    const attemptedCredits: number = this.getAttemptedCredits(grades);
+    const earnedCredits: number = this.getEarnedCredits(grades);
+    const sum: number = this.getTotalGrades(grades);
+    const failedCourses: any[] = this.getFailedCourses(grades);
+    const totalHours: number = this.getTotalHours(grades);
+    const mention: string = await this.mention(
+      studentId,
+      grades,
+      failedCourses,
+    );
+
+    const report: StudentReportType = {
+      name: student.name,
+      matricule: student.personal_number,
+      field: student.field.name,
+      email: student.email,
+      courses: grades.map((grade) => ({
+        name: grade.course.name,
+        session: grade.session,
+        promotion: grade.student_promotion,
+        grade: grade.equalized_average
+          ? grade.equalized_average
+          : grade.average,
+        credits: grade.course.credits,
+      })),
       percentage: ((sum / attemptedCredits) * 100) / 20,
       mention,
-      level: grades[0].student_promotion,
-      grades,
+      earnedCredits,
+      attemptedCredits,
+      totalHours,
+      failures: failedCourses.length,
+    };
+    return report;
+  }
+
+  async sendReportToStudent(id: number) {
+    await this.gradesManupilations(id, async (report: StudentReportType) => {
+      await this.mailerService.sendMail({
+        to: report.email,
+        subject: `Rapport de notes ${report.courses[0].promotion} ${
+          report.courses[0].promotion == 1 ? ' ère' : ' ème'
+        } année`,
+        attachments: [
+          {
+            filename: `${report.name}-${report.courses[0].promotion}-${report.courses[0].session}.pdf`,
+            path: `src/reports/${report.name}-${report.courses[0].promotion}-${report.courses[0].session}.pdf`,
+            contentType: 'application/pdf',
+          },
+        ],
+      });
+    });
+    return {
+      status: HttpStatus.OK,
+      message: 'Les relevés ont été envoyés avec succès',
     };
   }
 
-  async getDeliberatedGrades(id: number) {
-    const gradesByLevel = await this.getGrades(id);
-    const deliberatedGrades = gradesByLevel.map((grades) =>
-      this.getStudentReport(id, grades),
+  async getDeliberatedGrades(studentId: number) {
+    const reports = await this.gradesManupilations(
+      studentId,
+      (report: StudentReportType) => report,
     );
     return {
       status: HttpStatus.OK,
-      grades: await Promise.all(deliberatedGrades),
+      reports,
     };
+  }
+
+  async generatePdfReports(studentId: number) {
+    await this.gradesManupilations(studentId, this.pdfService.createPDF);
+    return {
+      status: HttpStatus.OK,
+      message: 'Les relevés ont generés avec succès',
+    };
+  }
+
+  async gradesManupilations(
+    studentId: number,
+    manupilate: (report: StudentReportType) => any,
+  ) {
+    const gradesByLevel = await this.getGrades(studentId);
+    const deliberatedGrades = gradesByLevel.map(async (grades) => {
+      const report = await this.getStudentReport(studentId, grades);
+      return await manupilate(report);
+    });
+    return await Promise.all(deliberatedGrades);
   }
 }
