@@ -205,21 +205,23 @@ export class DeliberationService {
   }
 
   async sendReportToStudent(id: number) {
+    const student = await this.getStudent(id);
+
+    const attachments = [];
     await this.gradesManupilations(id, async (report: StudentReportType) => {
-      await this.mailerService.sendMail({
-        to: report.email,
-        subject: `Rapport de notes ${report.courses[0].promotion} ${
-          report.courses[0].promotion == 1 ? ' ère' : ' ème'
-        } année`,
-        attachments: [
-          {
-            filename: `${report.name}-${report.courses[0].promotion}-${report.courses[0].session}.pdf`,
-            path: `src/reports/${report.name}-${report.courses[0].promotion}-${report.courses[0].session}.pdf`,
-            contentType: 'application/pdf',
-          },
-        ],
+      attachments.push({
+        filename: `${report.name}-${report.courses[0].promotion}-${report.courses[0].session}.pdf`,
+        path: `src/reports/${report.name}-${report.courses[0].promotion}-${report.courses[0].session}.pdf`,
+        contentType: 'application/pdf',
       });
     });
+
+    await this.mailerService.sendMail({
+      to: student.email,
+      subject: 'Rapport de notes.',
+      attachments,
+    });
+
     return {
       status: HttpStatus.OK,
       message: 'Les relevés ont été envoyés avec succès',
