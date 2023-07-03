@@ -27,11 +27,13 @@ export default function Home() {
         toast.error(err.response.data.message);
       } else {
         toast.error("Une erreur est survenue");
+        setTimeout(() => setProcessing(false), 500);
       }
     });
     if (res) {
       setTimeout(() => setProcessing(false), 500);
       console.log(res.data);
+      toast.success('Connexion réussi')
       localStorage.setItem("token", res.data.token);
     }
   }
@@ -41,7 +43,7 @@ export default function Home() {
       <ToastContainer />
       <Image src={logo} width={200} height={200} alt={"Logo"} placeholder="blur" className={"h-auto w-auto"}
              blurDataURL={"/logo.jpg"} />
-      <form action="" className={"flex flex-col gap-y-5 p-10 border shadow-sm"}
+      <form action="" className={"flex flex-col gap-y-5 p-10 border shadow-md"}
             onSubmit={handleSubmit}>
 
         <Input type={"email"} name={"email"} placeholder={"Email"} value={email} label={"Email"}
@@ -51,17 +53,7 @@ export default function Home() {
                onChange={(e) => setPassword(e.target.value)}
                required={true} />
 
-        <Button type={"submit"} className={"mt-3 bg-blue-800"} disabled={processing} onClick={handleSubmit}>
-          {
-            processing && (
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
-                   viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            )
-          }
+        <Button type={"submit"} className={"mt-3 bg-blue-500"} disabled={processing} onClick={handleSubmit} proccessing={processing}>
           {
             processing ? "Connexion..." : "Se connecter"
           }
