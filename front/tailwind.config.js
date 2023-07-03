@@ -7,11 +7,21 @@ module.exports = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-      },
+     fontFamily: {
+        inter: ['Inter Tight', 'sans-serif']
+     },
+      keyframes: {
+       'fade-in-down': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(-100px)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          }
+       }
+      }
     },
   },
   plugins: [],

@@ -17,14 +17,15 @@ export class AuthService {
     const { email, password } = signinDto;
     const user = await this.prismaService.user.findUnique({
       where: { email },
+      include: { roles: true },
     });
     const isMatch: boolean = await bcrypt.compare(password, user?.password);
     if (!user || !isMatch)
       throw new HttpException(
-        'Aucun utilisateur trouvé, veuillez vérifier vos identifiants',
+        'Aucun utilisateur trouvé.',
         HttpStatus.NOT_FOUND,
       );
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, role: user.roles };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
