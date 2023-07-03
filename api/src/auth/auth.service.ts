@@ -15,16 +15,18 @@ export class AuthService {
 
   async signin(signinDto: SigninDto) {
     const { email, password } = signinDto;
-    const user = await this.prismaService.user.findUnique({
-      where: { email },
-      include: { roles: true },
-    });
+    let user;
+    try {
+      user = await this.prismaService.user.findUnique({
+        where: { email },
+        include: { roles: true },
+      });
+    } catch {
+      throw new HttpException('Identifiants invalides', HttpStatus.NOT_FOUND);
+    }
     const isMatch: boolean = await bcrypt.compare(password, user?.password);
-    if (!user || !isMatch)
-      throw new HttpException(
-        'Aucun utilisateur trouvé.',
-        HttpStatus.NOT_FOUND,
-      );
+    if (!isMatch)
+      throw new HttpException('Identifiants invalides', HttpStatus.NOT_FOUND);
     const payload = { sub: user.id, email: user.email, role: user.roles };
     return {
       access_token: await this.jwtService.signAsync(payload),
