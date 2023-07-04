@@ -29,6 +29,7 @@ export class AuthService {
       throw new HttpException('Identifiants invalides', HttpStatus.NOT_FOUND);
     const payload = { sub: user.id, email: user.email, role: user.roles };
     return {
+      status: HttpStatus.OK,
       access_token: await this.jwtService.signAsync(payload),
     };
   }

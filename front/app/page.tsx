@@ -7,9 +7,10 @@ import "react-toastify/dist/ReactToastify.css";
 import { axiosInstance } from "@/services/axios.service";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-
+  const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [processing, setProcessing] = useState<boolean>(false);
@@ -17,25 +18,24 @@ export default function Home() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setProcessing(true);
-    const res = await axiosInstance.post("login", {
+    axiosInstance.post("login", {
         email,
         password
       }
-    ).catch((err) => {
-      if (err.response) {
-        setTimeout(() => setProcessing(false), 500);
-        toast.error(err.response.data.message);
-      } else {
-        toast.error("Une erreur est survenue");
-        setTimeout(() => setProcessing(false), 500);
-      }
-    });
-    if (res) {
+    ).then(res => {
       setTimeout(() => setProcessing(false), 500);
-      console.log(res.data);
-      toast.success('Connexion réussi')
-      localStorage.setItem("token", res.data.token);
-    }
+      if (res.data.status === 200) {
+        setTimeout(() => router.push("/dashboard"), 700)
+        toast.success("Connexion réussi");
+        localStorage.setItem("token", res.data.token);
+      } else {
+        toast.error(res.data.message);
+        console.log(res.data)
+      }
+    }).catch(err => {
+      setTimeout(() => setProcessing(false), 500);
+      toast.error(err.response.data.message);
+    });
   }
 
   return (
@@ -53,7 +53,8 @@ export default function Home() {
                onChange={(e) => setPassword(e.target.value)}
                required={true} />
 
-        <Button type={"submit"} className={"mt-3 bg-blue-500"} disabled={processing} onClick={handleSubmit} proccessing={processing}>
+        <Button type={"submit"} className={"mt-3 bg-blue-500"} disabled={processing} onClick={handleSubmit}
+                proccessing={processing}>
           {
             processing ? "Connexion..." : "Se connecter"
           }
