@@ -25,12 +25,11 @@ export default function Home() {
     ).then(res => {
       setTimeout(() => setProcessing(false), 500);
       if (res.data.status === 200) {
-        setTimeout(() => router.push("/dashboard"), 700)
-        toast.success("Connexion réussi");
-        localStorage.setItem("token", res.data.token);
+        setTimeout(() => router.push("/dashboard"), 700);
+        toast.success("Connexion réussie");
+        localStorage.setItem("token", res.data.access_token);
       } else {
         toast.error(res.data.message);
-        console.log(res.data)
       }
     }).catch(err => {
       setTimeout(() => setProcessing(false), 500);
@@ -40,11 +39,11 @@ export default function Home() {
 
   return (
     <main className={"h-screen flex flex-col items-center justify-center text-md md:text-lg"}>
-      <ToastContainer />
-      <Image src={logo} width={200} height={200} alt={"Logo"} placeholder="blur" className={"h-auto w-auto"}
-             blurDataURL={"/logo.jpg"} />
-      <form action="" className={"flex flex-col gap-y-5 p-10 border shadow-md"}
+      <ToastContainer theme={'colored'} />
+      <form action="" className={"flex flex-col gap-y-5 p-10 border bg-white shadow-md"}
             onSubmit={handleSubmit}>
+        <Image src={logo} width={200} height={200} alt={"Logo"} placeholder="blur" className={"h-auto w-auto"}
+               blurDataURL={"/logo.jpg"} />
 
         <Input type={"email"} name={"email"} placeholder={"Email"} value={email} label={"Email"}
                onChange={(e) => setEmail(e.target.value)}
