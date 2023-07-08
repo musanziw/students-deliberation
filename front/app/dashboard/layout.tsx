@@ -18,11 +18,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     setActiveLink(index);
   }
 
-  const Links = [{
-    title: "Utilisateurs",
-    icon: <BiUserPlus />,
-    href: "/dashboard"
-  },
+  const Links = [
+    {
+      title: "Utilisateurs",
+      icon: <BiUserPlus />,
+      href: "/dashboard"
+    },
     {
       title: "Rôles",
       icon: <BiShield />,
@@ -54,6 +55,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       href: "/dashboard/faculties"
     }
   ];
+
   return (
     <div className={"bg-white flex"}>
       <div className="flex flex-col bg-white h-screen p-8 px-12 border-r">
