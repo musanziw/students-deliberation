@@ -39,7 +39,7 @@ export default function Home() {
 
   return (
     <main className={"h-screen flex flex-col items-center justify-center text-md md:text-lg"}>
-      <ToastContainer theme={'colored'} />
+      <ToastContainer theme={"colored"} />
       <form action="" className={"flex flex-col gap-y-5 p-10 border bg-white shadow-md"}
             onSubmit={handleSubmit}>
         <Image src={logo} width={200} height={200} alt={"Logo"} placeholder="blur" className={"h-auto w-auto"}
@@ -47,9 +47,10 @@ export default function Home() {
 
         <Input type={"email"} name={"email"} placeholder={"Email"} value={email} label={"Email"}
                onChange={(e) => setEmail(e.target.value)}
-               required={true} />
+               required={true} className={"rounded-sm"} />
         <Input type={"password"} name={"password"} placeholder={"Mot de passe"} value={password} label={"Mot de passe"}
                onChange={(e) => setPassword(e.target.value)}
+               className={"rounded-sm"}
                required={true} />
 
         <Button type={"submit"} className={"mt-3 bg-blue-500"} disabled={processing} onClick={handleSubmit}

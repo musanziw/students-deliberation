@@ -4,7 +4,6 @@ import React from "react";
 export const metadata = {
   title: "UNH - Déliberation",
   description: "UNH - Déliberation"
-
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
